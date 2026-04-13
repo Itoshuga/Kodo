@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { PwaInstallButton } from '../components/ui/PwaInstallButton';
@@ -30,15 +30,15 @@ export function AuthPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Une erreur est survenue';
       if (msg.includes('auth/email-already-in-use')) {
-        setError('Cet email est deja utilise.');
+        setError('Cet email est déjà utilisé.');
       } else if (msg.includes('auth/invalid-credential') || msg.includes('auth/wrong-password')) {
         setError('Email ou mot de passe incorrect.');
       } else if (msg.includes('auth/weak-password')) {
-        setError('Le mot de passe doit faire au moins 6 caracteres.');
+        setError('Le mot de passe doit faire au moins 6 caractères.');
       } else if (msg.includes('auth/invalid-email')) {
         setError('Adresse email invalide.');
       } else if (msg.includes('auth/user-not-found')) {
-        setError('Aucun compte trouve avec cet email.');
+        setError('Aucun compte trouvé avec cet email.');
       } else {
         setError(msg);
       }
@@ -70,7 +70,7 @@ export function AuthPage() {
               <span className="font-brand text-3xl font-bold text-white">Kodo</span>
             </div>
             <p className="max-w-md text-lg leading-relaxed text-white/80">
-              Planifiez chaque etape de vos trajets au Japon. Metro, Shinkansen, marche a pied -- tout est la, meme hors-ligne.
+              Planifiez chaque étape de vos trajets au Japon. Métro, Shinkansen, marche à pied -- tout est là, même hors-ligne.
             </p>
           </div>
         </div>
@@ -89,7 +89,7 @@ export function AuthPage() {
             </div>
 
             <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800">
-              {mode === 'login' ? 'Bon retour' : 'Creer un compte'}
+              {mode === 'login' ? 'Bon retour' : 'Créer un compte'}
             </h1>
             <p className="mt-2 text-base text-stone-500">
               {mode === 'login'
@@ -169,7 +169,7 @@ export function AuthPage() {
                   <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <>
-                    {mode === 'login' ? 'Se connecter' : 'Creer mon compte'}
+                    {mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
                     <ArrowRight className="h-5 w-5" />
                   </>
                 )}
@@ -184,7 +184,7 @@ export function AuthPage() {
               >
                 {mode === 'login'
                   ? 'Pas encore de compte ? Inscrivez-vous'
-                  : 'Deja un compte ? Connectez-vous'}
+                  : 'Déjà un compte ? Connectez-vous'}
               </button>
             </div>
 
@@ -203,3 +203,6 @@ export function AuthPage() {
     </div>
   );
 }
+
+
+

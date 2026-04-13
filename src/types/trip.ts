@@ -20,6 +20,7 @@ export interface TripStep {
   note?: string;
   lineName?: string;
   platform?: string;
+  link?: string;
 }
 
 export interface Trip {

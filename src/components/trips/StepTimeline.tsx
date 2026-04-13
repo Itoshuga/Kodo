@@ -1,4 +1,4 @@
-import type { TripStep } from '../../types/trip';
+﻿import type { TripStep } from '../../types/trip';
 import { StepItem } from './StepItem';
 
 interface StepTimelineProps {
@@ -10,7 +10,7 @@ export function StepTimeline({ steps, tripId }: StepTimelineProps) {
   const sorted = [...steps].sort((a, b) => a.order - b.order);
 
   return (
-    <div role="list" aria-label="Etapes du trajet" className="px-1">
+    <div role="list" aria-label="Étapes du trajet" className="mx-auto max-w-3xl px-0.5">
       {sorted.map((step, i) => (
         <div role="listitem" key={step.id}>
           <StepItem
@@ -24,3 +24,4 @@ export function StepTimeline({ steps, tripId }: StepTimelineProps) {
     </div>
   );
 }
+

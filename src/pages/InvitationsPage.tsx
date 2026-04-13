@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { Mail, Check, X, Loader2, Send } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { EmptyState } from '../components/ui/EmptyState';
@@ -62,7 +62,7 @@ export function InvitationsPage() {
               Invitations
             </h1>
             <p className="mt-1 text-sm text-stone-500">
-              Trajets partages avec vous par d'autres voyageurs
+              Trajets partagés avec vous par d'autres voyageurs
             </p>
           </div>
 
@@ -74,7 +74,7 @@ export function InvitationsPage() {
             <EmptyState
               icon={<Mail className="h-10 w-10" />}
               title="Aucune invitation"
-              description="Quand quelqu'un vous invitera a collaborer sur un trajet, l'invitation apparaitra ici."
+              description="Quand quelqu'un vous invitera à collaborer sur un trajet, l'invitation apparaîtra ici."
             />
           ) : (
             <div className="space-y-3">
@@ -158,3 +158,4 @@ export function InvitationsPage() {
     </PageLayout>
   );
 }
+

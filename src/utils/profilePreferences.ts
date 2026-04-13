@@ -1,4 +1,4 @@
-export type AccentKey = 'sunset' | 'ocean' | 'forest' | 'midnight';
+﻿export type AccentKey = 'sunset' | 'ocean' | 'forest' | 'midnight';
 export type TravelStyle = 'slow' | 'food' | 'culture' | 'photo';
 
 export interface ProfilePreferences {
@@ -18,7 +18,7 @@ export interface AccentOption {
 
 export const DEFAULT_PROFILE_PREFERENCES: ProfilePreferences = {
   city: 'Tokyo',
-  bio: 'Je planifie mes trajets comme un carnet de voyage: simple, clair et precis.',
+  bio: 'Je planifie mes trajets comme un carnet de voyage: simple, clair et précis.',
   style: 'culture',
   accent: 'forest',
 };
@@ -100,3 +100,4 @@ export function saveProfilePreferences(uid: string | null | undefined, prefs: Pr
   if (!uid) return;
   localStorage.setItem(getProfilePreferencesStorageKey(uid), JSON.stringify(prefs));
 }
+

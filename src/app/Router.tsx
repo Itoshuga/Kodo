@@ -5,6 +5,7 @@ import { TripDetailPage } from '../pages/TripDetailPage';
 import { CreateTripPage } from '../pages/CreateTripPage';
 import { EditTripPage } from '../pages/EditTripPage';
 import { AddStepPage } from '../pages/AddStepPage';
+import { StepDetailPage } from '../pages/StepDetailPage';
 import { EditStepPage } from '../pages/EditStepPage';
 import { InvitationsPage } from '../pages/InvitationsPage';
 import { ProfilePage } from '../pages/ProfilePage';
@@ -19,6 +20,7 @@ export function AppRouter() {
       <Route path="/trips/:id" element={<TripDetailPage />} />
       <Route path="/trips/:id/edit" element={<EditTripPage />} />
       <Route path="/trips/:id/steps/new" element={<AddStepPage />} />
+      <Route path="/trips/:id/steps/:stepId" element={<StepDetailPage />} />
       <Route path="/trips/:id/steps/:stepId/edit" element={<EditStepPage />} />
       <Route path="/invitations" element={<InvitationsPage />} />
       <Route path="/profile" element={<ProfilePage />} />

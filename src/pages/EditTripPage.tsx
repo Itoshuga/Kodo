@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { X, ArrowRight, MapPin, Calendar, Sparkles } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
@@ -121,7 +121,7 @@ export function EditTripPage() {
                   <Sparkles className="h-6 w-6 text-stone-600" />
                 </div>
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Details du trajet
+                  Détails du trajet
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-stone-500">
                   Ajustez la date et les notes si necessaire.
@@ -156,7 +156,7 @@ export function EditTripPage() {
                     rows={3}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Premier jour, depart tot le matin..."
+                    placeholder="Premier jour, départ tot le matin..."
                     className="w-full resize-none rounded-2xl border-2 border-stone-200 bg-stone-50/50 px-4 py-3 text-base font-medium text-stone-800 placeholder:text-stone-300 transition-colors focus:border-teal-600 focus:bg-white focus:outline-none"
                   />
                 </div>
@@ -185,3 +185,4 @@ export function EditTripPage() {
     </PageLayout>
   );
 }
+

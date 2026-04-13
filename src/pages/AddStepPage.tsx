@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { X, ArrowRight, Check } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
@@ -28,6 +28,7 @@ export function AddStepPage() {
   const [estimatedDuration, setEstimatedDuration] = useState('');
   const [lineName, setLineName] = useState('');
   const [platform, setPlatform] = useState('');
+  const [link, setLink] = useState('');
   const [note, setNote] = useState('');
 
   if (!trip) {
@@ -45,6 +46,13 @@ export function AddStepPage() {
 
   const canGoStep2 = title.trim().length > 0 && from.trim().length > 0 && to.trim().length > 0;
 
+  function normalizeStepLink(value: string) {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  }
+
   async function handleSubmit() {
     if (!title.trim() || !from.trim() || !to.trim()) return;
 
@@ -60,6 +68,7 @@ export function AddStepPage() {
       estimatedDuration: estimatedDuration ? parseInt(estimatedDuration, 10) : undefined,
       lineName: lineName.trim() || undefined,
       platform: platform.trim() || undefined,
+      link: normalizeStepLink(link),
       note: note.trim() || undefined,
     });
     navigate(`/trips/${trip!.id}`);
@@ -94,7 +103,7 @@ export function AddStepPage() {
             <div className="flex flex-1 flex-col">
               <div className="mb-8">
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Comment vous deplacez-vous ?
+                  Comment vous déplacez-vous ?
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-stone-500">
                   Choisissez votre moyen de transport.
@@ -158,7 +167,7 @@ export function AddStepPage() {
                   <TransportIcon type={type} size={20} />
                 </div>
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Decrivez le parcours
+                  Décrivez le parcours
                 </h1>
               </div>
 
@@ -172,7 +181,7 @@ export function AddStepPage() {
                     autoFocus
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Metro vers Shinjuku"
+                    placeholder="Métro vers Shinjuku"
                     className="input-floating"
                   />
                 </div>
@@ -180,7 +189,7 @@ export function AddStepPage() {
                 <div className="relative ml-3 border-l-2 border-stone-200 py-4 pl-6">
                   <div className="absolute -left-[5px] top-4 h-2 w-2 rounded-full bg-green-500" />
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                    Depart
+                    Départ
                   </label>
                   <input
                     type="text"
@@ -194,7 +203,7 @@ export function AddStepPage() {
                 <div className="relative ml-3 border-l-2 border-stone-200 pb-2 pl-6 pt-4">
                   <div className="absolute -left-[5px] top-4 h-2 w-2 rounded-full bg-red-500" />
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                    Arrivee
+                    Arrivée
                   </label>
                   <input
                     type="text"
@@ -231,7 +240,7 @@ export function AddStepPage() {
             <div className="flex flex-1 flex-col">
               <div className="mb-8">
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Ajoutez les details
+                  Ajoutez les détails
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-stone-500">
                   Tout est optionnel. Les infos pratiques pour le jour J.
@@ -242,7 +251,7 @@ export function AddStepPage() {
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label htmlFor="departure" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Depart
+                      Départ
                     </label>
                     <input
                       id="departure"
@@ -254,7 +263,7 @@ export function AddStepPage() {
                   </div>
                   <div>
                     <label htmlFor="arrival" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Arrivee
+                      Arrivée
                     </label>
                     <input
                       id="arrival"
@@ -266,7 +275,7 @@ export function AddStepPage() {
                   </div>
                   <div>
                     <label htmlFor="duration" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Duree
+                      Durée
                     </label>
                     <div className="relative">
                       <input
@@ -314,6 +323,19 @@ export function AddStepPage() {
                   </div>
                 </div>
 
+                <div className="relative">
+                  <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
+                    Lien utile
+                  </label>
+                  <input
+                    type="url"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    placeholder="maps.app.goo.gl/..."
+                    className="input-floating text-sm"
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="note" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
                     Note
@@ -323,7 +345,7 @@ export function AddStepPage() {
                     rows={2}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Infos complementaires..."
+                    placeholder="Infos complémentaires..."
                     className="w-full resize-none rounded-2xl border-2 border-stone-200 bg-stone-50/50 px-4 py-3 text-sm font-medium text-stone-800 placeholder:text-stone-300 transition-colors focus:border-teal-600 focus:bg-white focus:outline-none"
                   />
                 </div>
@@ -342,7 +364,7 @@ export function AddStepPage() {
                   onClick={handleSubmit}
                   className="btn-primary form-nav-primary-btn flex-1"
                 >
-                  Ajouter l'etape
+                  Ajouter l'étape
                 </button>
               </div>
             </div>
@@ -352,3 +374,6 @@ export function AddStepPage() {
     </PageLayout>
   );
 }
+
+
+

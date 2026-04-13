@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { Download, Share, Plus, X, MoreVertical } from 'lucide-react';
 import { usePwaInstall } from '../../hooks/usePwaInstall';
 
@@ -50,7 +50,7 @@ export function PwaInstallButton({ variant = 'inline' }: PwaInstallButtonProps) 
             <div className="mb-5 flex items-start justify-between">
               <div>
                 <h2 className="text-lg font-bold text-stone-800">Installer Kodo</h2>
-                <p className="mt-1 text-sm text-stone-500">Suivez ces etapes sur Safari</p>
+                <p className="mt-1 text-sm text-stone-500">Suivez ces étapes sur Safari</p>
               </div>
               <button
                 onClick={() => setShowIosModal(false)}
@@ -83,11 +83,11 @@ export function PwaInstallButton({ variant = 'inline' }: PwaInstallButtonProps) 
                 <div className="pt-1">
                   <p className="text-sm font-medium text-stone-700">
                     Faites defiler et appuyez sur{' '}
-                    <strong>"Sur l'ecran d'accueil"</strong>
+                    <strong>"Sur l'écran d'accueil"</strong>
                   </p>
                   <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1">
                     <Plus className="h-4 w-4 text-stone-600" />
-                    <span className="text-xs text-stone-500">Sur l'ecran d'accueil</span>
+                    <span className="text-xs text-stone-500">Sur l'écran d'accueil</span>
                   </div>
                 </div>
               </li>
@@ -98,7 +98,7 @@ export function PwaInstallButton({ variant = 'inline' }: PwaInstallButtonProps) 
                 </div>
                 <div className="pt-1">
                   <p className="text-sm font-medium text-stone-700">
-                    Appuyez sur <strong>"Ajouter"</strong> en haut a droite
+                    Appuyez sur <strong>"Ajouter"</strong> en haut à droite
                   </p>
                 </div>
               </li>
@@ -141,7 +141,7 @@ export function PwaInstallButton({ variant = 'inline' }: PwaInstallButtonProps) 
                   </p>
                   <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-lg border border-stone-200 bg-stone-50 px-2.5 py-1">
                     <MoreVertical className="h-4 w-4 text-stone-600" />
-                    <span className="text-xs text-stone-500">menu en haut a droite</span>
+                    <span className="text-xs text-stone-500">menu en haut à droite</span>
                   </div>
                 </div>
               </li>
@@ -153,7 +153,7 @@ export function PwaInstallButton({ variant = 'inline' }: PwaInstallButtonProps) 
                 <div className="pt-1">
                   <p className="text-sm font-medium text-stone-700">
                     Appuyez sur <strong>"Installer l'application"</strong> ou
-                    <strong> "Ajouter a l'ecran d'accueil"</strong>
+                    <strong> "Ajouter a l'écran d'accueil"</strong>
                   </p>
                 </div>
               </li>
@@ -182,3 +182,4 @@ export function PwaInstallButton({ variant = 'inline' }: PwaInstallButtonProps) 
     </>
   );
 }
+

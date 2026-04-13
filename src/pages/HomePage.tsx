@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import {
   ArrowRight,
   Map,
@@ -35,8 +35,8 @@ export function HomePage() {
                 </h1>
               </div>
               <p className="max-w-md text-base leading-relaxed text-teal-100 lg:text-lg">
-                Planifiez chaque etape de vos trajets au Japon.
-                Metro, Shinkansen, marche a pied -- tout est la, meme hors-ligne.
+                Planifiez chaque étape de vos trajets au Japon.
+                Métro, Shinkansen, marche à pied -- tout est là, même hors-ligne.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -83,7 +83,7 @@ export function HomePage() {
           {recentTrips.length > 0 && (
             <div className="mt-10">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-stone-800">Trajets recents</h2>
+                <h2 className="text-lg font-bold text-stone-800">Trajets récents</h2>
                 <Link
                   to="/trips"
                   className="flex items-center gap-1 text-sm font-semibold text-teal-700 transition-colors hover:text-teal-800"
@@ -109,17 +109,17 @@ export function HomePage() {
                 {
                   icon: Wifi,
                   title: 'Fonctionne hors-ligne',
-                  desc: 'Toutes vos donnees restent accessibles sans connexion.',
+                  desc: 'Toutes vos données restent accessibles sans connexion.',
                 },
                 {
                   icon: Smartphone,
                   title: 'Installable sur mobile',
-                  desc: 'Ajoutez Kodo a votre ecran d\'accueil comme une app native.',
+                  desc: 'Ajoutez Kodo à votre écran d\'accueil comme une app native.',
                 },
                 {
                   icon: Map,
-                  title: 'Etape par etape',
-                  desc: 'Chaque trajet detaille : lignes, quais, horaires, notes.',
+                  title: 'Étape par étape',
+                  desc: 'Chaque trajet détaillé : lignes, quais, horaires, notes.',
                 },
               ].map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start gap-4 px-5 py-4">
@@ -139,3 +139,6 @@ export function HomePage() {
     </PageLayout>
   );
 }
+
+
+

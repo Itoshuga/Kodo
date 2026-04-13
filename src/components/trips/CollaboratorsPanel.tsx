@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import {
   Users,
   UserPlus,
@@ -75,7 +75,7 @@ export function CollaboratorsPanel({ trip, onTripUpdated }: CollaboratorsPanelPr
     const trimmed = email.trim().toLowerCase();
 
     if (trimmed === user.email.toLowerCase()) {
-      setError('Vous ne pouvez pas vous inviter vous-meme.');
+      setError('Vous ne pouvez pas vous inviter vous-même.');
       return;
     }
 
@@ -83,7 +83,7 @@ export function CollaboratorsPanel({ trip, onTripUpdated }: CollaboratorsPanelPr
       (c) => c.email.toLowerCase() === trimmed
     );
     if (alreadyCollab) {
-      setError('Cette personne fait deja partie du trajet.');
+      setError('Cette personne fait déjà partie du trajet.');
       return;
     }
 
@@ -91,7 +91,7 @@ export function CollaboratorsPanel({ trip, onTripUpdated }: CollaboratorsPanelPr
       (i) => i.toEmail === trimmed
     );
     if (alreadyInvited) {
-      setError('Une invitation est deja en attente pour cette adresse.');
+      setError('Une invitation est déjà en attente pour cette adresse.');
       return;
     }
 
@@ -99,7 +99,7 @@ export function CollaboratorsPanel({ trip, onTripUpdated }: CollaboratorsPanelPr
     try {
       await sendInvite(trip.id, trip.title, user, trimmed);
       setEmail('');
-      setSuccess('Invitation envoyee !');
+      setSuccess('Invitation envoyée !');
       await loadData();
       setTimeout(() => setSuccess(''), 3000);
     } catch {
@@ -300,7 +300,7 @@ export function CollaboratorsPanel({ trip, onTripUpdated }: CollaboratorsPanelPr
       <ConfirmModal
         open={!!confirmRemove}
         title="Retirer ce collaborateur ?"
-        description={`${confirmRemove?.username} n'aura plus acces a ce trajet.`}
+        description={`${confirmRemove?.username} n'aura plus accès a ce trajet.`}
         confirmLabel="Retirer"
         variant="danger"
         onConfirm={() => confirmRemove && handleRemoveCollab(confirmRemove)}
@@ -310,7 +310,7 @@ export function CollaboratorsPanel({ trip, onTripUpdated }: CollaboratorsPanelPr
       <ConfirmModal
         open={!!confirmRevoke}
         title="Annuler cette invitation ?"
-        description={`L'invitation envoyee a ${confirmRevoke?.toEmail} sera supprimee.`}
+        description={`L'invitation envoyée a ${confirmRevoke?.toEmail} sera supprimée.`}
         confirmLabel="Annuler l'invitation"
         variant="danger"
         onConfirm={() => confirmRevoke && handleRevokeInvite(confirmRevoke)}
@@ -319,3 +319,4 @@ export function CollaboratorsPanel({ trip, onTripUpdated }: CollaboratorsPanelPr
     </>
   );
 }
+

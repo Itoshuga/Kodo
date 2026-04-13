@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { Map, Plus } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { TripCard } from '../components/trips/TripCard';
@@ -19,7 +19,7 @@ export function TripsPage() {
               </h1>
               {trips.length > 0 && (
                 <p className="mt-1 text-sm text-stone-500">
-                  {trips.length} trajet{trips.length > 1 ? 's' : ''} enregistre{trips.length > 1 ? 's' : ''}
+                  {trips.length} trajet{trips.length > 1 ? 's' : ''} enregistré{trips.length > 1 ? 's' : ''}
                 </p>
               )}
             </div>
@@ -40,11 +40,11 @@ export function TripsPage() {
             <EmptyState
               icon={<Map className="h-10 w-10" />}
               title="Aucun trajet"
-              description="Commencez par creer votre premier trajet pour organiser votre voyage au Japon."
+              description="Commencez par créer votre premier trajet pour organiser votre voyage au Japon."
               action={
                 <Link to="/trips/new" className="btn-primary">
                   <Plus className="h-4 w-4" />
-                  Creer un trajet
+                  Créer un trajet
                 </Link>
               }
             />
@@ -60,3 +60,4 @@ export function TripsPage() {
     </PageLayout>
   );
 }
+

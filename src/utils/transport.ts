@@ -1,4 +1,4 @@
-import type { TransportType } from '../types/trip';
+﻿import type { TransportType } from '../types/trip';
 
 interface TransportMeta {
   label: string;
@@ -15,7 +15,7 @@ const transportMap: Record<TransportType, TransportMeta> = {
     textColor: 'text-green-700',
   },
   metro: {
-    label: 'Metro',
+    label: 'Métro',
     color: '#2563eb',
     bgColor: 'bg-blue-50',
     textColor: 'text-blue-700',
@@ -66,3 +66,4 @@ export function formatDuration(minutes: number): string {
   const m = minutes % 60;
   return m > 0 ? `${h}h${m.toString().padStart(2, '0')}` : `${h}h`;
 }
+

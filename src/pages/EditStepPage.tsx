@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { X, ArrowRight, Check, Trash2 } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
@@ -32,6 +32,7 @@ export function EditStepPage() {
   );
   const [lineName, setLineName] = useState(existingStep?.lineName ?? '');
   const [platform, setPlatform] = useState(existingStep?.platform ?? '');
+  const [link, setLink] = useState(existingStep?.link ?? '');
   const [note, setNote] = useState(existingStep?.note ?? '');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
@@ -39,7 +40,7 @@ export function EditStepPage() {
     return (
       <PageLayout>
         <div className="page-container pt-20 text-center">
-          <p className="text-stone-500">Etape introuvable.</p>
+          <p className="text-stone-500">Étape introuvable.</p>
           <Link to="/trips" className="mt-4 inline-block text-sm font-semibold text-teal-700 underline">
             Retour
           </Link>
@@ -49,6 +50,13 @@ export function EditStepPage() {
   }
 
   const canGoStep2 = title.trim().length > 0 && from.trim().length > 0 && to.trim().length > 0;
+
+  function normalizeStepLink(value: string) {
+    const trimmed = value.trim();
+    if (!trimmed) return undefined;
+    if (/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  }
 
   async function handleSubmit() {
     if (!title.trim() || !from.trim() || !to.trim()) return;
@@ -63,6 +71,7 @@ export function EditStepPage() {
       estimatedDuration: estimatedDuration ? parseInt(estimatedDuration, 10) : undefined,
       lineName: lineName.trim() || undefined,
       platform: platform.trim() || undefined,
+      link: normalizeStepLink(link),
       note: note.trim() || undefined,
     });
     navigate(`/trips/${trip!.id}`);
@@ -98,7 +107,7 @@ export function EditStepPage() {
               type="button"
               onClick={() => setShowDeleteModal(true)}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors hover:bg-red-100"
-              aria-label="Supprimer l'etape"
+              aria-label="Supprimer l'étape"
             >
               <Trash2 className="h-4 w-4" />
             </button>
@@ -156,7 +165,7 @@ export function EditStepPage() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="btn-primary w-full py-4 text-base"
+                  className="btn-primary form-nav-primary-btn w-full"
                 >
                   Continuer
                   <ArrowRight className="h-5 w-5" />
@@ -189,7 +198,7 @@ export function EditStepPage() {
                     autoFocus
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Metro vers Shinjuku"
+                    placeholder="Métro vers Shinjuku"
                     className="input-floating"
                   />
                 </div>
@@ -197,7 +206,7 @@ export function EditStepPage() {
                 <div className="relative ml-3 border-l-2 border-stone-200 py-4 pl-6">
                   <div className="absolute -left-[5px] top-4 h-2 w-2 rounded-full bg-green-500" />
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                    Depart
+                    Départ
                   </label>
                   <input
                     type="text"
@@ -211,7 +220,7 @@ export function EditStepPage() {
                 <div className="relative ml-3 border-l-2 border-stone-200 pb-2 pl-6 pt-4">
                   <div className="absolute -left-[5px] top-4 h-2 w-2 rounded-full bg-red-500" />
                   <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                    Arrivee
+                    Arrivée
                   </label>
                   <input
                     type="text"
@@ -227,7 +236,7 @@ export function EditStepPage() {
                 <button
                   type="button"
                   onClick={() => setStep(0)}
-                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border-2 border-stone-200 text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700"
+                  className="form-nav-icon-btn"
                 >
                   <ArrowRight className="h-5 w-5 rotate-180" />
                 </button>
@@ -235,7 +244,7 @@ export function EditStepPage() {
                   type="button"
                   disabled={!canGoStep2}
                   onClick={() => setStep(2)}
-                  className="btn-primary flex-1 py-4 text-base"
+                  className="btn-primary form-nav-primary-btn flex-1"
                 >
                   Continuer
                   <ArrowRight className="h-5 w-5" />
@@ -248,7 +257,7 @@ export function EditStepPage() {
             <div className="flex flex-1 flex-col">
               <div className="mb-8">
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Details de l'etape
+                  Détails de l'étape
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-stone-500">
                   Tout est optionnel. Les infos pratiques pour le jour J.
@@ -259,7 +268,7 @@ export function EditStepPage() {
                 <div className="grid grid-cols-3 gap-3">
                   <div>
                     <label htmlFor="departure" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Depart
+                      Départ
                     </label>
                     <input
                       id="departure"
@@ -271,7 +280,7 @@ export function EditStepPage() {
                   </div>
                   <div>
                     <label htmlFor="arrival" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Arrivee
+                      Arrivée
                     </label>
                     <input
                       id="arrival"
@@ -283,7 +292,7 @@ export function EditStepPage() {
                   </div>
                   <div>
                     <label htmlFor="duration" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Duree
+                      Durée
                     </label>
                     <div className="relative">
                       <input
@@ -331,6 +340,19 @@ export function EditStepPage() {
                   </div>
                 </div>
 
+                <div className="relative">
+                  <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
+                    Lien utile
+                  </label>
+                  <input
+                    type="url"
+                    value={link}
+                    onChange={(e) => setLink(e.target.value)}
+                    placeholder="maps.app.goo.gl/..."
+                    className="input-floating text-sm"
+                  />
+                </div>
+
                 <div>
                   <label htmlFor="note" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
                     Note
@@ -340,7 +362,7 @@ export function EditStepPage() {
                     rows={2}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Infos complementaires..."
+                    placeholder="Infos complémentaires..."
                     className="w-full resize-none rounded-2xl border-2 border-stone-200 bg-stone-50/50 px-4 py-3 text-sm font-medium text-stone-800 placeholder:text-stone-300 transition-colors focus:border-teal-600 focus:bg-white focus:outline-none"
                   />
                 </div>
@@ -350,14 +372,14 @@ export function EditStepPage() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border-2 border-stone-200 text-stone-500 transition-colors hover:border-stone-300 hover:text-stone-700"
+                  className="form-nav-icon-btn"
                 >
                   <ArrowRight className="h-5 w-5 rotate-180" />
                 </button>
                 <button
                   type="button"
                   onClick={handleSubmit}
-                  className="btn-primary flex-1 py-4 text-base"
+                  className="btn-primary form-nav-primary-btn flex-1"
                 >
                   Enregistrer
                 </button>
@@ -369,8 +391,8 @@ export function EditStepPage() {
 
       <ConfirmModal
         open={showDeleteModal}
-        title="Supprimer cette etape ?"
-        description="Cette action est irreversible. L'etape sera definitivement supprimee."
+        title="Supprimer cette étape ?"
+        description="Cette action est irréversible. L'étape sera définitivement supprimée."
         confirmLabel="Supprimer"
         variant="danger"
         onConfirm={handleDelete}
@@ -379,3 +401,6 @@ export function EditStepPage() {
     </PageLayout>
   );
 }
+
+
+

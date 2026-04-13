@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   BadgeCheck,
@@ -104,7 +104,7 @@ export function ProfilePage() {
               className="btn-ghost rounded-xl border border-stone-200 bg-white"
             >
               <Settings className="h-4 w-4" />
-              Paramètres
+              ParamÃ¨tres
             </Link>
           </div>
 
@@ -130,7 +130,7 @@ export function ProfilePage() {
               <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:justify-start">
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 font-semibold text-white backdrop-blur-sm">
                   <BadgeCheck className="h-3.5 w-3.5" />
-                  Vérifié
+                  VÃ©rifiÃ©
                 </span>
                 <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${accent.chipClass}`}>
                   <MapPin className="h-3.5 w-3.5" />
@@ -150,7 +150,7 @@ export function ProfilePage() {
               <p className="mt-1 text-2xl font-bold text-stone-800">{tripCount}</p>
             </div>
             <div className="rounded-2xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Etapes</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Étapes</p>
               <p className="mt-1 text-2xl font-bold text-stone-800">{stepCount}</p>
             </div>
             <div className="rounded-2xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm">
@@ -167,13 +167,13 @@ export function ProfilePage() {
             <div className="rounded-3xl border border-stone-200/80 bg-white p-5 shadow-sm">
               <h3 className="text-base font-semibold text-stone-800">Ambiance de trajet</h3>
               {topTransports.length === 0 ? (
-                <p className="mt-2 text-sm text-stone-500">Ajoutez des etapes pour faire apparaitre vos modes de transport preferes.</p>
+                <p className="mt-2 text-sm text-stone-500">Ajoutez des étapes pour faire apparaitre vos modes de transport préférés.</p>
               ) : (
                 <div className="mt-3 space-y-2">
                   {topTransports.map(({ type, count, meta }) => (
                     <div key={type} className="flex items-center justify-between rounded-xl bg-stone-50 px-3 py-2">
                       <span className="text-sm font-medium text-stone-700">{meta.label}</span>
-                      <span className="text-xs font-semibold text-stone-500">{count} etape{count > 1 ? 's' : ''}</span>
+                      <span className="text-xs font-semibold text-stone-500">{count} étape{count > 1 ? 's' : ''}</span>
                     </div>
                   ))}
                 </div>
@@ -183,7 +183,7 @@ export function ProfilePage() {
             <div className="space-y-4">
               <div className="rounded-3xl border border-stone-200/80 bg-white p-5 shadow-sm">
                 <div className="mb-3 flex items-center justify-between">
-                  <h3 className="text-base font-semibold text-stone-800">Trajets recents</h3>
+                  <h3 className="text-base font-semibold text-stone-800">Trajets récents</h3>
                   <Link to="/trips" className="text-xs font-semibold text-teal-700 hover:text-teal-800">
                     Voir tout
                   </Link>
@@ -191,7 +191,7 @@ export function ProfilePage() {
 
                 {recentTrips.length === 0 ? (
                   <Link to="/trips/new" className="group flex items-center justify-between rounded-2xl border border-dashed border-stone-300 px-4 py-3 text-sm font-medium text-stone-600 transition-colors hover:border-stone-400 hover:text-stone-800">
-                    Creer votre premier trajet
+                    Créer votre premier trajet
                     <ChevronRight className="h-4 w-4 text-stone-400 transition-transform group-hover:translate-x-0.5" />
                   </Link>
                 ) : (
@@ -204,7 +204,7 @@ export function ProfilePage() {
                       >
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-stone-800">{trip.title}</p>
-                          <p className="mt-0.5 text-xs text-stone-500">{trip.steps.length} etape{trip.steps.length > 1 ? 's' : ''}</p>
+                          <p className="mt-0.5 text-xs text-stone-500">{trip.steps.length} étape{trip.steps.length > 1 ? 's' : ''}</p>
                         </div>
                         <ChevronRight className="h-4 w-4 flex-shrink-0 text-stone-400 transition-transform group-hover:translate-x-0.5" />
                       </Link>
@@ -226,7 +226,7 @@ export function ProfilePage() {
                   </div>
                   <div className="flex items-center gap-2 rounded-xl bg-stone-50 px-3 py-2 text-sm text-stone-600">
                     <Route className="h-4 w-4 text-stone-500" />
-                    <span>{tripCount} trajet{tripCount > 1 ? 's' : ''} prepares</span>
+                    <span>{tripCount} trajet{tripCount > 1 ? 's' : ''} préparés</span>
                   </div>
                   <div className="flex items-center gap-2 rounded-xl bg-stone-50 px-3 py-2 text-sm text-stone-600">
                     <Timer className="h-4 w-4 text-stone-500" />
@@ -250,3 +250,5 @@ export function ProfilePage() {
     </PageLayout>
   );
 }
+
+
