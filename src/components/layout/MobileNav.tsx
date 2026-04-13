@@ -1,0 +1,75 @@
+import { NavLink, useLocation } from 'react-router-dom';
+import { Home, Map, Plus, Mail, LogOut } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+
+const navItems = [
+  { to: '/', icon: Home, label: 'Accueil' },
+  { to: '/trips', icon: Map, label: 'Trajets' },
+  { to: '/trips/new', icon: Plus, label: 'Nouveau' },
+  { to: '/invitations', icon: Mail, label: 'Invitations' },
+] as const;
+
+export function MobileNav() {
+  const { logout } = useAuth();
+  const location = useLocation();
+
+  function isNavItemActive(to: string, fallbackIsActive: boolean) {
+    if (to === '/trips') {
+      return location.pathname.startsWith('/trips') && !location.pathname.startsWith('/trips/new');
+    }
+
+    return fallbackIsActive;
+  }
+
+  return (
+    <nav
+      aria-label="Navigation principale"
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-stone-200/80 bg-white/90 backdrop-blur-xl lg:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
+      <ul className="flex">
+        {navItems.map(({ to, icon: Icon, label }) => (
+          <li key={to} className="flex-1">
+            <NavLink
+              to={to}
+              end={to === '/'}
+              className={({ isActive }) => {
+                const isItemActive = isNavItemActive(to, isActive);
+
+                return `flex h-14 flex-col items-center justify-center text-[11px] font-medium transition-colors duration-150 ${
+                  isItemActive
+                    ? 'text-teal-700'
+                    : 'text-stone-400 active:text-stone-600'
+                }`;
+              }}
+            >
+              {({ isActive }) => {
+                const isItemActive = isNavItemActive(to, isActive);
+
+                return (
+                  <>
+                    <Icon
+                      className="h-[22px] w-[22px]"
+                      strokeWidth={isItemActive ? 2.2 : 1.8}
+                    />
+                    <span className="mt-1 leading-none">{label}</span>
+                  </>
+                );
+              }}
+            </NavLink>
+          </li>
+        ))}
+        <li className="flex-1">
+          <button
+            type="button"
+            onClick={logout}
+            className="flex h-14 w-full flex-col items-center justify-center text-[11px] font-medium text-stone-400 transition-colors duration-150 active:text-stone-600"
+          >
+            <LogOut className="h-[22px] w-[22px]" strokeWidth={1.8} />
+            <span className="mt-1 leading-none">Quitter</span>
+          </button>
+        </li>
+      </ul>
+    </nav>
+  );
+}
