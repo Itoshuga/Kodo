@@ -24,37 +24,31 @@ export type InstallState = 'android' | 'ios' | 'unavailable';
 
 export function usePwaInstall() {
   const [installState, setInstallState] = useState<InstallState>('unavailable');
-  const [canPromptInstall, setCanPromptInstall] = useState(false);
 
   useEffect(() => {
     if (isInStandaloneMode()) {
       setInstallState('unavailable');
-      setCanPromptInstall(false);
       return;
     }
 
     if (isIos()) {
       setInstallState('ios');
-      setCanPromptInstall(false);
       return;
     }
 
     if (isAndroid()) {
       setInstallState('android');
-      setCanPromptInstall(Boolean(deferredPrompt));
     }
 
     function handlePrompt(e: Event) {
       e.preventDefault();
       deferredPrompt = e as BeforeInstallPromptEvent;
       setInstallState('android');
-      setCanPromptInstall(true);
     }
 
     function handleInstalled() {
       deferredPrompt = null;
       setInstallState('unavailable');
-      setCanPromptInstall(false);
     }
 
     window.addEventListener('beforeinstallprompt', handlePrompt);
@@ -62,7 +56,6 @@ export function usePwaInstall() {
 
     if (deferredPrompt) {
       setInstallState('android');
-      setCanPromptInstall(true);
     }
 
     return () => {
@@ -73,16 +66,19 @@ export function usePwaInstall() {
 
   const install = useCallback(async () => {
     if (!deferredPrompt) return false;
-    await deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    let shown = true;
+    const promptEvent = deferredPrompt;
+    deferredPrompt = null;
+    await promptEvent.prompt();
+    const { outcome } = await promptEvent.userChoice;
     if (outcome === 'accepted') {
-      deferredPrompt = null;
       setInstallState('unavailable');
-      setCanPromptInstall(false);
+    } else if (isAndroid()) {
+      setInstallState('android');
+    } else {
+      setInstallState('unavailable');
     }
-    return shown;
+    return true;
   }, []);
 
-  return { installState, install, canPromptInstall };
+  return { installState, install };
 }
