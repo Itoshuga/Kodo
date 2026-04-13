@@ -77,7 +77,7 @@ export function AuthPage() {
       </div>
 
       <div className="flex flex-1 flex-col">
-        <div className="flex flex-1 flex-col items-center justify-center px-6 py-12">
+        <div className="flex flex-1 flex-col items-center justify-center px-6 pb-28 pt-12 lg:py-12">
           <div className="w-full max-w-sm">
             <div className="mb-10 lg:hidden">
               <div className="flex items-center gap-3 mb-3">
@@ -188,8 +188,16 @@ export function AuthPage() {
               </button>
             </div>
 
-            <PwaInstallButton />
+            <div className="hidden lg:block">
+              <PwaInstallButton />
+            </div>
           </div>
+        </div>
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-40 px-4 pb-[calc(env(safe-area-inset-bottom)+0.75rem)] lg:hidden">
+        <div className="mx-auto w-full max-w-sm">
+          <PwaInstallButton variant="floating-mobile" />
         </div>
       </div>
     </div>
