@@ -87,55 +87,56 @@ export function InvitationsPage() {
                     className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200/60"
                   >
                     <div className="px-5 py-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-teal-50">
-                              <Send className="h-4 w-4 text-teal-600" />
-                            </div>
-                            <div className="min-w-0">
-                              <h3 className="text-[15px] font-semibold text-stone-800">
-                                {invite.tripTitle}
-                              </h3>
-                              <p className="text-xs text-stone-500">
-                                Invite par{' '}
-                                <span className="font-semibold text-stone-600">
-                                  {invite.fromUsername}
-                                </span>
-                              </p>
-                            </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-teal-50">
+                            <Send className="h-4 w-4 text-teal-600" />
+                          </div>
+                          <div className="min-w-0">
+                            <h3 className="text-[15px] font-semibold text-stone-800">
+                              {invite.tripTitle}
+                            </h3>
+                            <p className="text-xs text-stone-500">
+                              Invite par{' '}
+                              <span className="font-semibold text-stone-600">
+                                {invite.fromUsername}
+                              </span>
+                            </p>
                           </div>
                         </div>
+                      </div>
 
-                        <div className="flex flex-shrink-0 items-center gap-2">
-                          <button
-                            type="button"
-                            disabled={isProcessing}
-                            onClick={() => handleDecline(invite)}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-stone-200 text-stone-400 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
-                          >
-                            {isProcessing ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
+                      <div className="mt-4 grid grid-cols-2 gap-2 sm:mt-3">
+                        <button
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => handleDecline(invite)}
+                          className="flex h-10 w-full items-center justify-center gap-1.5 rounded-xl border-2 border-stone-200 bg-white text-sm font-semibold text-stone-500 transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
                               <X className="h-4 w-4" />
-                            )}
-                          </button>
-                          <button
-                            type="button"
-                            disabled={isProcessing}
-                            onClick={() => handleAccept(invite)}
-                            className="flex h-9 items-center gap-1.5 rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-teal-800 disabled:opacity-40"
-                          >
-                            {isProcessing ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <Check className="h-4 w-4" />
-                                Accepter
-                              </>
-                            )}
-                          </button>
-                        </div>
+                              Refuser
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isProcessing}
+                          onClick={() => handleAccept(invite)}
+                          className="flex h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-teal-700 px-4 text-sm font-semibold text-white transition-colors hover:bg-teal-800 disabled:opacity-40"
+                        >
+                          {isProcessing ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Check className="h-4 w-4" />
+                              Accepter
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
 
