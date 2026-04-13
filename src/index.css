@@ -17,6 +17,8 @@
     line-height: 1.5;
     letter-spacing: -0.011em;
     overflow-x: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
+    background-color: #fafaf9;
   }
 
   * {
