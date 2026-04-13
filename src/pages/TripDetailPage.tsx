@@ -52,6 +52,7 @@ export function TripDetailPage() {
     );
   }
 
+  const tripId = trip.id;
   const totalDuration = trip.steps.reduce((sum, s) => sum + (s.estimatedDuration || 0), 0);
   const firstPoint = trip.steps.find((s) => Boolean(s.from || s.to));
   const lastPoint = [...trip.steps].reverse().find((s) => Boolean(s.to || s.from));
@@ -80,7 +81,7 @@ export function TripDetailPage() {
   const activeDay = itineraryByDay.find((d) => d.index === selectedDayIndex) ?? itineraryByDay[0];
 
   async function handleDelete() {
-    await deleteTrip(trip.id);
+    await deleteTrip(tripId);
     navigate('/trips');
   }
 
@@ -107,7 +108,7 @@ export function TripDetailPage() {
               </Link>
               <div className="flex items-center gap-2">
                 <Link
-                  to={`/trips/${trip.id}/edit`}
+                  to={`/trips/${tripId}/edit`}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
                   aria-label="Modifier"
                 >
@@ -173,7 +174,7 @@ export function TripDetailPage() {
                 description="Ajoutez des étapes pour détailler ce trajet."
                 action={
                 <Link
-                    to={`/trips/${trip.id}/steps/new?day=${selectedDayIndex}`}
+                    to={`/trips/${tripId}/steps/new?day=${selectedDayIndex}`}
                     className="btn-primary"
                   >
                     <Plus className="h-4 w-4" />
@@ -212,7 +213,7 @@ export function TripDetailPage() {
                       </p>
                     ) : (
                       <div className="mt-4 min-w-0">
-                        <StepTimeline steps={activeDay.steps} tripId={trip.id} />
+                        <StepTimeline steps={activeDay.steps} tripId={tripId} />
                       </div>
                     )}
                   </section>
@@ -220,7 +221,7 @@ export function TripDetailPage() {
 
                 <div className="mt-4 flex justify-center pb-4">
                   <Link
-                    to={`/trips/${trip.id}/steps/new?day=${activeDay?.index ?? selectedDayIndex}`}
+                    to={`/trips/${tripId}/steps/new?day=${activeDay?.index ?? selectedDayIndex}`}
                     className="inline-flex items-center gap-2 rounded-xl border-2 border-dashed border-stone-200 px-5 py-3 text-sm font-semibold text-stone-500 transition-all duration-150 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700"
                   >
                     <Plus className="h-4 w-4" />
