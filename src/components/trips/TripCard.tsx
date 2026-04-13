@@ -3,6 +3,7 @@ import { ChevronRight, MapPin, Clock, Route, Users } from 'lucide-react';
 import type { Trip } from '../../types/trip';
 import { TransportIcon } from './TransportIcon';
 import { formatDuration, getTransportMeta } from '../../utils/transport';
+import { formatTripDateRange } from '../../utils/tripSchedule';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface TripCardProps {
@@ -17,12 +18,15 @@ export function TripCard({ trip }: TripCardProps) {
     (sum, s) => sum + (s.estimatedDuration || 0),
     0
   );
-  const firstFrom = trip.steps[0]?.from;
-  const lastTo = trip.steps[trip.steps.length - 1]?.to;
+  const firstPoint = trip.steps.find((s) => Boolean(s.from || s.to));
+  const lastPoint = [...trip.steps].reverse().find((s) => Boolean(s.to || s.from));
+  const firstFrom = firstPoint?.from || firstPoint?.to;
+  const lastTo = lastPoint?.to || lastPoint?.from;
   const transportTypes = [...new Set(trip.steps.map((s) => s.type))];
   const coverUrl = trip.coverImage || defaultCover;
   const isShared = trip.ownerUid && user && trip.ownerUid !== user.uid;
   const hasCollabs = (trip.collaboratorUids?.length || 0) > 0;
+  const dateRange = formatTripDateRange(trip);
 
   return (
     <Link
@@ -38,12 +42,9 @@ export function TripCard({ trip }: TripCardProps) {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
         <div className="absolute left-3 top-3 flex items-center gap-2">
-          {trip.date && (
+          {dateRange && (
             <div className="rounded-lg bg-white/90 px-2.5 py-1 text-xs font-semibold text-stone-700 shadow-sm backdrop-blur-sm">
-              {new Date(trip.date).toLocaleDateString('fr-FR', {
-                day: 'numeric',
-                month: 'short',
-              })}
+              {dateRange}
             </div>
           )}
           {(isShared || hasCollabs) && (

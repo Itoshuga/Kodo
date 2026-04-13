@@ -14,14 +14,17 @@ interface StepItemProps {
 export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
   const meta = getTransportMeta(step.type);
   const navigate = useNavigate();
+  const fromLabel = step.from?.trim();
+  const toLabel = step.to?.trim();
+  const hasRoute = Boolean(fromLabel && toLabel);
 
   function handleClick() {
     navigate(`/trips/${tripId}/steps/${step.id}`);
   }
 
   return (
-    <div className="relative flex gap-4 sm:gap-5">
-      <div className="flex w-11 flex-col items-center">
+    <div className="relative flex min-w-0 gap-3 sm:gap-5">
+      <div className="flex w-10 flex-shrink-0 flex-col items-center sm:w-11">
         <div className={`w-px ${isFirst ? 'bg-transparent' : 'bg-stone-200/80'}`} style={{ height: 16 }} />
 
         <div className="relative flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full border border-white/70 bg-white/70 shadow-sm backdrop-blur-sm ring-1 ring-stone-200/70">
@@ -42,11 +45,11 @@ export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
         )}
       </div>
 
-      <div className={`flex-1 ${isLast ? 'pb-2' : 'pb-6'} pt-1`}>
+      <div className={`min-w-0 flex-1 ${isLast ? 'pb-2' : 'pb-6'} pt-1`}>
         <button
           type="button"
           onClick={handleClick}
-          className="group relative w-full overflow-hidden rounded-[28px] border border-white/70 bg-white/65 text-left shadow-[0_10px_30px_-20px_rgba(15,23,42,0.35)] backdrop-blur-md ring-1 ring-stone-200/70 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-[0_14px_36px_-18px_rgba(15,23,42,0.4)] active:translate-y-0"
+          className="group relative w-full max-w-full overflow-hidden rounded-[28px] border border-white/70 bg-white/65 text-left shadow-[0_10px_30px_-20px_rgba(15,23,42,0.35)] backdrop-blur-md ring-1 ring-stone-200/70 transition-all duration-200 hover:-translate-y-0.5 hover:bg-white/80 hover:shadow-[0_14px_36px_-18px_rgba(15,23,42,0.4)] active:translate-y-0"
         >
           <span
             className="absolute inset-x-4 top-0 h-px opacity-90"
@@ -59,8 +62,8 @@ export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
             style={{ backgroundColor: `${meta.color}1c` }}
           />
 
-          <div className="relative px-5 pb-4 pt-4 sm:px-6 sm:pb-5">
-            <div className="flex items-start justify-between gap-3">
+          <div className="relative px-4 pb-4 pt-4 sm:px-6 sm:pb-5">
+            <div className="flex min-w-0 items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <span
@@ -74,7 +77,7 @@ export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
                   </span>
                 </div>
 
-                <h4 className="mt-3 text-[17px] font-semibold leading-snug text-stone-800">
+                <h4 className="mt-3 break-words text-[17px] font-semibold leading-snug text-stone-800">
                   {step.title}
                 </h4>
               </div>
@@ -90,13 +93,21 @@ export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
               </div>
             </div>
 
-            <div className="mt-3.5 rounded-2xl bg-white/75 px-3 py-2.5 ring-1 ring-inset ring-stone-200/70">
-              <div className="flex items-center gap-2 text-[13px] text-stone-700">
-                <span className="truncate font-medium">{step.from}</span>
-                <ArrowRight className="h-3.5 w-3.5 flex-shrink-0 text-stone-400" />
-                <span className="truncate font-medium">{step.to}</span>
+            {(fromLabel || toLabel) && (
+              <div className="mt-3.5 rounded-2xl bg-white/75 px-3 py-2.5 ring-1 ring-inset ring-stone-200/70">
+                {hasRoute ? (
+                  <div className="flex min-w-0 items-center gap-2 text-[13px] text-stone-700">
+                    <span className="min-w-0 flex-1 truncate font-medium">{fromLabel}</span>
+                    <ArrowRight className="h-3.5 w-3.5 flex-shrink-0 text-stone-400" />
+                    <span className="min-w-0 flex-1 truncate font-medium">{toLabel}</span>
+                  </div>
+                ) : (
+                  <div className="break-words text-[13px] font-medium text-stone-700">
+                    {fromLabel || toLabel}
+                  </div>
+                )}
               </div>
-            </div>
+            )}
 
             {(step.departureTime || step.arrivalTime) && (
               <div className="mt-3 flex flex-wrap gap-2">
@@ -115,10 +126,10 @@ export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
           </div>
 
           {step.note && (
-            <div className="border-t border-white/80 bg-white/55 px-5 py-3 sm:px-6">
+            <div className="border-t border-white/80 bg-white/55 px-4 py-3 sm:px-6">
               <div className="flex items-start gap-2 text-[13px] leading-relaxed text-stone-600">
                 <Info className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-stone-400" />
-                <span>{step.note}</span>
+                <span className="min-w-0 break-words">{step.note}</span>
               </div>
             </div>
           )}

@@ -6,6 +6,9 @@ import {
   Zap,
   CircleDot,
   HelpCircle,
+  Clock3,
+  Route,
+  MapPin,
 } from 'lucide-react';
 import type { TransportType } from '../../types/trip';
 import { getTransportMeta } from '../../utils/transport';
@@ -17,6 +20,9 @@ const iconMap: Record<TransportType, React.ElementType> = {
   bus: Bus,
   taxi: Car,
   shinkansen: Zap,
+  wait: Clock3,
+  transfer: Route,
+  visit: MapPin,
   other: HelpCircle,
 };
 

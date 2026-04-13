@@ -40,7 +40,7 @@ export async function sendInvite(
     fromUid: fromUser.uid,
     fromUsername: fromUser.username,
     toEmail: toEmail.toLowerCase().trim(),
-    toUid: targetUser?.uid,
+    toUid: targetUser?.uid ?? null,
     status: 'pending',
     createdAt: new Date().toISOString(),
   };

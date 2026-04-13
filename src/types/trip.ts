@@ -5,6 +5,9 @@ export type TransportType =
   | 'bus'
   | 'taxi'
   | 'shinkansen'
+  | 'wait'
+  | 'transfer'
+  | 'visit'
   | 'other';
 
 export interface TripStep {
@@ -12,8 +15,9 @@ export interface TripStep {
   order: number;
   type: TransportType;
   title: string;
-  from: string;
-  to: string;
+  from?: string;
+  to?: string;
+  dayIndex?: number;
   departureTime?: string;
   arrivalTime?: string;
   estimatedDuration?: number;
@@ -28,6 +32,8 @@ export interface Trip {
   title: string;
   description?: string;
   date?: string;
+  startDate?: string;
+  endDate?: string;
   coverImage?: string;
   steps: TripStep[];
   createdAt: string;

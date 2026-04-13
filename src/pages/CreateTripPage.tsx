@@ -4,6 +4,7 @@ import { X, ArrowRight, Calendar, MapPin, Sparkles } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { FormStepper } from '../components/ui/FormStepper';
 import { useTripsStore } from '../store/tripsStore';
+import { getCoverImageForTrip } from '../services/coverImageService';
 import { generateId } from '../utils/ids';
 
 const TOTAL_STEPS = 2;
@@ -15,25 +16,53 @@ export function CreateTripPage() {
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [date, setDate] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [dateError, setDateError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canContinue = title.trim().length > 0;
+  const canSubmitDates = Boolean(startDate && endDate && endDate >= startDate) && !isSubmitting;
 
   async function handleSubmit() {
     if (!title.trim()) return;
+    if (!startDate || !endDate) {
+      setDateError('Veuillez renseigner une date de départ et une date de retour.');
+      return;
+    }
+    if (endDate < startDate) {
+      setDateError('La date de retour doit être après la date de départ.');
+      return;
+    }
 
-    const trip = {
-      id: generateId(),
-      title: title.trim(),
-      description: description.trim() || undefined,
-      date: date || undefined,
-      steps: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+    setIsSubmitting(true);
+    try {
+      const trimmedTitle = title.trim();
+      let coverImage: string | undefined;
+      try {
+        coverImage = await getCoverImageForTrip(trimmedTitle);
+      } catch {
+        coverImage = undefined;
+      }
 
-    await addTrip(trip);
-    navigate(`/trips/${trip.id}`);
+      const trip = {
+        id: generateId(),
+        title: trimmedTitle,
+        description: description.trim() || undefined,
+        date: startDate,
+        startDate,
+        endDate,
+        coverImage,
+        steps: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      await addTrip(trip);
+      navigate(`/trips/${trip.id}`);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -58,7 +87,7 @@ export function CreateTripPage() {
                   <MapPin className="h-6 w-6 text-white" />
                 </div>
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Ou allez-vous ?
+                  Où allez-vous ?
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-stone-500">
                   Nommez votre trajet pour le retrouver facilement.
@@ -109,39 +138,71 @@ export function CreateTripPage() {
                   Quelques détails
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-stone-500">
-                  Optionnel. Vous pouvez compléter plus tard.
+                  Choisissez vos dates de départ et de retour.
                 </p>
               </div>
 
               <div className="space-y-8">
-                <div className="relative">
-                  <div className="flex items-center gap-3 border-b-2 border-stone-200 pb-3 transition-colors focus-within:border-teal-600">
-                    <Calendar className="h-5 w-5 flex-shrink-0 text-stone-400" />
-                    <div className="flex-1">
-                      <label htmlFor="date" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                        Date du trajet
-                      </label>
-                      <input
-                        id="date"
-                        type="date"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        className="w-full border-0 bg-transparent p-0 text-base font-medium text-stone-800 outline-none"
-                      />
+                <div className="space-y-4">
+                  <div className="relative">
+                    <div className="flex items-center gap-3 border-b-2 border-stone-200 pb-3 transition-colors focus-within:border-teal-600">
+                      <Calendar className="h-5 w-5 flex-shrink-0 text-stone-400" />
+                      <div className="flex-1">
+                        <label htmlFor="startDate" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
+                          Départ
+                        </label>
+                        <input
+                          id="startDate"
+                          type="date"
+                          required
+                          value={startDate}
+                          onChange={(e) => {
+                            setStartDate(e.target.value);
+                            setDateError('');
+                          }}
+                          className="w-full border-0 bg-transparent p-0 text-base font-medium text-stone-800 outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="relative">
+                    <div className="flex items-center gap-3 border-b-2 border-stone-200 pb-3 transition-colors focus-within:border-teal-600">
+                      <Calendar className="h-5 w-5 flex-shrink-0 text-stone-400" />
+                      <div className="flex-1">
+                        <label htmlFor="endDate" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
+                          Retour
+                        </label>
+                        <input
+                          id="endDate"
+                          type="date"
+                          required
+                          value={endDate}
+                          min={startDate || undefined}
+                          onChange={(e) => {
+                            setEndDate(e.target.value);
+                            setDateError('');
+                          }}
+                          className="w-full border-0 bg-transparent p-0 text-base font-medium text-stone-800 outline-none"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
+                {dateError && (
+                  <p className="text-sm font-medium text-red-600">{dateError}</p>
+                )}
+
                 <div className="relative">
                   <label htmlFor="description" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                    Notes
+                    Notes (optionnel)
                   </label>
                   <textarea
                     id="description"
                     rows={3}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Premier jour, départ tot le matin..."
+                    placeholder="Premier jour, départ tôt le matin..."
                     className="w-full resize-none rounded-2xl border-2 border-stone-200 bg-stone-50/50 px-4 py-3 text-base font-medium text-stone-800 placeholder:text-stone-300 transition-colors focus:border-teal-600 focus:bg-white focus:outline-none"
                   />
                 </div>
@@ -157,10 +218,11 @@ export function CreateTripPage() {
                 </button>
                 <button
                   type="button"
+                  disabled={!canSubmitDates}
                   onClick={handleSubmit}
                   className="btn-primary form-nav-primary-btn flex-1"
                 >
-                  Créer le trajet
+                  {isSubmitting ? 'Création...' : 'Créer le trajet'}
                 </button>
               </div>
             </div>

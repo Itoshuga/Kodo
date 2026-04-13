@@ -1,12 +1,13 @@
-﻿import { useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useParams, Link, useSearchParams } from 'react-router-dom';
 import { X, ArrowRight, Check } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { FormStepper } from '../components/ui/FormStepper';
 import { TransportIcon } from '../components/trips/TransportIcon';
 import { useTripsStore } from '../store/tripsStore';
-import { getAllTransportTypes, getTransportMeta } from '../utils/transport';
+import { getAllTransportTypes, getStepTypeConfig, getTransportMeta } from '../utils/transport';
 import { generateId } from '../utils/ids';
+import { getTripDayOptions } from '../utils/tripSchedule';
 import type { TransportType } from '../types/trip';
 
 const TOTAL_STEPS = 3;
@@ -14,12 +15,16 @@ const TOTAL_STEPS = 3;
 export function AddStepPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const trips = useTripsStore((s) => s.trips);
   const addStep = useTripsStore((s) => s.addStep);
   const trip = trips.find((t) => t.id === id);
+  const prefilledDay = Number.parseInt(searchParams.get('day') ?? '', 10);
+  const initialDayIndex = Number.isFinite(prefilledDay) && prefilledDay >= 0 ? prefilledDay : 0;
 
   const [step, setStep] = useState(0);
   const [type, setType] = useState<TransportType>('walk');
+  const [dayIndex, setDayIndex] = useState(initialDayIndex);
   const [title, setTitle] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -44,7 +49,24 @@ export function AddStepPage() {
     );
   }
 
-  const canGoStep2 = title.trim().length > 0 && from.trim().length > 0 && to.trim().length > 0;
+  const transportTypes = getAllTransportTypes();
+  const selectedMeta = getTransportMeta(type);
+  const typeConfig = getStepTypeConfig(type);
+  const baseDayOptions = getTripDayOptions(trip);
+  const dayOptions = [...baseDayOptions];
+
+  for (let i = baseDayOptions.length; i <= dayIndex; i += 1) {
+    dayOptions.push({
+      index: i,
+      shortLabel: `Jour ${i + 1}`,
+      label: `Jour ${i + 1}`,
+    });
+  }
+
+  const titleOk = title.trim().length > 0;
+  const fromOk = !typeConfig.requiresFrom || from.trim().length > 0;
+  const toOk = !typeConfig.requiresTo || to.trim().length > 0;
+  const canGoStep2 = titleOk && fromOk && toOk;
 
   function normalizeStepLink(value: string) {
     const trimmed = value.trim();
@@ -54,31 +76,29 @@ export function AddStepPage() {
   }
 
   async function handleSubmit() {
-    if (!title.trim() || !from.trim() || !to.trim()) return;
+    if (!canGoStep2) return;
 
-    await addStep(trip!.id, {
+    await addStep(trip.id, {
       id: generateId(),
-      order: trip!.steps.length,
+      order: trip.steps.length,
+      dayIndex,
       type,
       title: title.trim(),
-      from: from.trim(),
-      to: to.trim(),
+      from: typeConfig.requiresFrom ? from.trim() : from.trim() || undefined,
+      to: typeConfig.requiresTo ? to.trim() : to.trim() || undefined,
       departureTime: departureTime || undefined,
       arrivalTime: arrivalTime || undefined,
       estimatedDuration: estimatedDuration ? parseInt(estimatedDuration, 10) : undefined,
-      lineName: lineName.trim() || undefined,
-      platform: platform.trim() || undefined,
+      lineName: typeConfig.showLinePlatform ? lineName.trim() || undefined : undefined,
+      platform: typeConfig.showLinePlatform ? platform.trim() || undefined : undefined,
       link: normalizeStepLink(link),
       note: note.trim() || undefined,
     });
-    navigate(`/trips/${trip!.id}`);
+    navigate(`/trips/${trip.id}`);
   }
 
-  const transportTypes = getAllTransportTypes();
-  const selectedMeta = getTransportMeta(type);
-
   function goBack() {
-    if (step === 0) navigate(`/trips/${trip!.id}`);
+    if (step === 0) navigate(`/trips/${trip.id}`);
     else setStep(step - 1);
   }
 
@@ -98,15 +118,14 @@ export function AddStepPage() {
         </div>
 
         <div className="flex flex-1 flex-col px-6 pb-24 pt-8 lg:mx-auto lg:w-full lg:max-w-xl lg:pt-12">
-
           {step === 0 && (
             <div className="flex flex-1 flex-col">
               <div className="mb-8">
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Comment vous déplacez-vous ?
+                  Quel type d’étape ?
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-stone-500">
-                  Choisissez votre moyen de transport.
+                  Transport, attente, correspondance ou lieu de visite.
                 </p>
               </div>
 
@@ -167,11 +186,29 @@ export function AddStepPage() {
                   <TransportIcon type={type} size={20} />
                 </div>
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Décrivez le parcours
+                  Décrivez l’étape
                 </h1>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-5">
+                <div>
+                  <label htmlFor="dayIndex" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
+                    Jour de l’itinéraire
+                  </label>
+                  <select
+                    id="dayIndex"
+                    value={dayIndex}
+                    onChange={(e) => setDayIndex(parseInt(e.target.value, 10))}
+                    className="input-field text-sm font-medium"
+                  >
+                    {dayOptions.map((option) => (
+                      <option key={option.index} value={option.index}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div className="relative">
                   <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
                     Titre
@@ -181,38 +218,40 @@ export function AddStepPage() {
                     autoFocus
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Métro vers Shinjuku"
+                    placeholder={typeConfig.titlePlaceholder}
                     className="input-floating"
                   />
                 </div>
 
-                <div className="relative ml-3 border-l-2 border-stone-200 py-4 pl-6">
-                  <div className="absolute -left-[5px] top-4 h-2 w-2 rounded-full bg-green-500" />
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                    Départ
-                  </label>
-                  <input
-                    type="text"
-                    value={from}
-                    onChange={(e) => setFrom(e.target.value)}
-                    placeholder="Gare de Shibuya"
-                    className="w-full border-0 bg-transparent p-0 text-base font-medium text-stone-800 placeholder:text-stone-300 focus:outline-none"
-                  />
-                </div>
+                {typeConfig.requiresFrom && (
+                  <div className="relative">
+                    <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
+                      {typeConfig.fromLabel}
+                    </label>
+                    <input
+                      type="text"
+                      value={from}
+                      onChange={(e) => setFrom(e.target.value)}
+                      placeholder={typeConfig.fromPlaceholder}
+                      className="input-floating"
+                    />
+                  </div>
+                )}
 
-                <div className="relative ml-3 border-l-2 border-stone-200 pb-2 pl-6 pt-4">
-                  <div className="absolute -left-[5px] top-4 h-2 w-2 rounded-full bg-red-500" />
-                  <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                    Arrivée
-                  </label>
-                  <input
-                    type="text"
-                    value={to}
-                    onChange={(e) => setTo(e.target.value)}
-                    placeholder="Gare de Shinjuku"
-                    className="w-full border-0 bg-transparent p-0 text-base font-medium text-stone-800 placeholder:text-stone-300 focus:outline-none"
-                  />
-                </div>
+                {typeConfig.requiresTo && (
+                  <div className="relative">
+                    <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
+                      {typeConfig.toLabel}
+                    </label>
+                    <input
+                      type="text"
+                      value={to}
+                      onChange={(e) => setTo(e.target.value)}
+                      placeholder={typeConfig.toPlaceholder}
+                      className="input-floating"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="mt-auto flex gap-3 pt-8">
@@ -240,10 +279,10 @@ export function AddStepPage() {
             <div className="flex flex-1 flex-col">
               <div className="mb-8">
                 <h1 className="font-brand text-3xl font-bold tracking-tight text-stone-800 lg:text-4xl">
-                  Ajoutez les détails
+                  Détails de l’étape
                 </h1>
                 <p className="mt-3 text-base leading-relaxed text-stone-500">
-                  Tout est optionnel. Les infos pratiques pour le jour J.
+                  Ajustez les horaires et les infos utiles.
                 </p>
               </div>
 
@@ -294,34 +333,38 @@ export function AddStepPage() {
                   </div>
                 </div>
 
-                <div className="h-px bg-stone-100" />
+                {typeConfig.showLinePlatform && (
+                  <>
+                    <div className="h-px bg-stone-100" />
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="relative">
-                    <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Ligne
-                    </label>
-                    <input
-                      type="text"
-                      value={lineName}
-                      onChange={(e) => setLineName(e.target.value)}
-                      placeholder="Yamanote"
-                      className="input-floating text-sm"
-                    />
-                  </div>
-                  <div className="relative">
-                    <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Quai / Sortie
-                    </label>
-                    <input
-                      type="text"
-                      value={platform}
-                      onChange={(e) => setPlatform(e.target.value)}
-                      placeholder="Quai 5"
-                      className="input-floating text-sm"
-                    />
-                  </div>
-                </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="relative">
+                        <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
+                          Ligne
+                        </label>
+                        <input
+                          type="text"
+                          value={lineName}
+                          onChange={(e) => setLineName(e.target.value)}
+                          placeholder="Yamanote"
+                          className="input-floating text-sm"
+                        />
+                      </div>
+                      <div className="relative">
+                        <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
+                          Quai / Sortie
+                        </label>
+                        <input
+                          type="text"
+                          value={platform}
+                          onChange={(e) => setPlatform(e.target.value)}
+                          placeholder="Quai 5"
+                          className="input-floating text-sm"
+                        />
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 <div className="relative">
                   <label className="pointer-events-none absolute left-0 top-0 text-xs font-semibold uppercase tracking-wider text-stone-400">
@@ -364,7 +407,7 @@ export function AddStepPage() {
                   onClick={handleSubmit}
                   className="btn-primary form-nav-primary-btn flex-1"
                 >
-                  Ajouter l'étape
+                  Ajouter l’étape
                 </button>
               </div>
             </div>
@@ -374,6 +417,3 @@ export function AddStepPage() {
     </PageLayout>
   );
 }
-
-
-

@@ -7,7 +7,7 @@ export interface TripInvite {
   fromUid: string;
   fromUsername: string;
   toEmail: string;
-  toUid?: string;
+  toUid?: string | null;
   status: InviteStatus;
   createdAt: string;
 }

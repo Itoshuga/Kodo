@@ -6,6 +6,8 @@ import {
   deleteDoc,
   query,
   where,
+  type DocumentData,
+  type QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Trip } from '../types/trip';
@@ -29,14 +31,45 @@ export function getCachedTrips(): Trip[] {
   }
 }
 
+function toTrip(data: DocumentData): Trip {
+  const { uid: _legacyUid, ...rest } = data;
+  return rest as Trip;
+}
+
+function stripUndefinedDeep<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => stripUndefinedDeep(item))
+      .filter((item) => item !== undefined) as T;
+  }
+
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .map(([k, v]) => [k, stripUndefinedDeep(v)]);
+    return Object.fromEntries(entries) as T;
+  }
+
+  return value;
+}
+
+function pushUniqueTrip(
+  target: Trip[],
+  seen: Set<string>,
+  docSnap: QueryDocumentSnapshot<DocumentData>
+): void {
+  const trip = toTrip(docSnap.data());
+  if (seen.has(trip.id)) return;
+  seen.add(trip.id);
+  target.push(trip);
+}
+
 export async function fetchTrips(uid: string): Promise<Trip[]> {
-  const ownQ = query(
-    collection(db, COLLECTION),
-    where('uid', '==', uid)
-  );
+  const ownQ = query(collection(db, COLLECTION), where('ownerUid', '==', uid));
+  const ownSnap = await getDocs(ownQ);
 
   let collabSnap;
-  const ownSnap = await getDocs(ownQ);
+  let legacyOwnSnap = null;
 
   try {
     const collabQ = query(
@@ -48,25 +81,29 @@ export async function fetchTrips(uid: string): Promise<Trip[]> {
     collabSnap = null;
   }
 
+  try {
+    const legacyOwnQ = query(collection(db, COLLECTION), where('uid', '==', uid));
+    legacyOwnSnap = await getDocs(legacyOwnQ);
+  } catch {
+    legacyOwnSnap = null;
+  }
+
   const seen = new Set<string>();
   const trips: Trip[] = [];
 
   for (const d of ownSnap.docs) {
-    const data = d.data();
-    const { uid: _uid, ...rest } = data;
-    const trip = rest as Trip;
-    seen.add(trip.id);
-    trips.push(trip);
+    pushUniqueTrip(trips, seen, d);
+  }
+
+  if (legacyOwnSnap) {
+    for (const d of legacyOwnSnap.docs) {
+      pushUniqueTrip(trips, seen, d);
+    }
   }
 
   if (collabSnap) {
     for (const d of collabSnap.docs) {
-      const data = d.data();
-      const { uid: _uid, ...rest } = data;
-      const trip = rest as Trip;
-      if (!seen.has(trip.id)) {
-        trips.push(trip);
-      }
+      pushUniqueTrip(trips, seen, d);
     }
   }
 
@@ -76,13 +113,6 @@ export async function fetchTrips(uid: string): Promise<Trip[]> {
 }
 
 export async function saveTrip(uid: string, trip: Trip): Promise<void> {
-  const toSave = {
-    ...trip,
-    uid,
-    ownerUid: trip.ownerUid || uid,
-    collaboratorUids: trip.collaboratorUids || [],
-  };
-  await setDoc(doc(db, COLLECTION, trip.id), toSave);
   const cached = getCachedTrips();
   const idx = cached.findIndex((t) => t.id === trip.id);
   if (idx >= 0) {
@@ -91,10 +121,17 @@ export async function saveTrip(uid: string, trip: Trip): Promise<void> {
     cached.unshift(trip);
   }
   cacheTrips(cached);
+
+  const toSave = stripUndefinedDeep({
+    ...trip,
+    ownerUid: trip.ownerUid || uid,
+    collaboratorUids: trip.collaboratorUids || [],
+  });
+  await setDoc(doc(db, COLLECTION, trip.id), toSave);
 }
 
 export async function removeTrip(_uid: string, tripId: string): Promise<void> {
-  await deleteDoc(doc(db, COLLECTION, tripId));
   const cached = getCachedTrips().filter((t) => t.id !== tripId);
   cacheTrips(cached);
+  await deleteDoc(doc(db, COLLECTION, tripId));
 }

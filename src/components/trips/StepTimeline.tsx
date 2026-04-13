@@ -10,9 +10,9 @@ export function StepTimeline({ steps, tripId }: StepTimelineProps) {
   const sorted = [...steps].sort((a, b) => a.order - b.order);
 
   return (
-    <div role="list" aria-label="Étapes du trajet" className="mx-auto max-w-3xl px-0.5">
+    <div role="list" aria-label="Étapes du trajet" className="w-full min-w-0 overflow-x-hidden">
       {sorted.map((step, i) => (
-        <div role="listitem" key={step.id}>
+        <div role="listitem" key={step.id} className="min-w-0">
           <StepItem
             step={step}
             tripId={tripId}

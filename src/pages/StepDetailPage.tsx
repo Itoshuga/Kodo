@@ -19,6 +19,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { TransportIcon } from '../components/trips/TransportIcon';
 import { useTripsStore } from '../store/tripsStore';
 import { formatDuration, getTransportMeta } from '../utils/transport';
+import { getTripDayOptions } from '../utils/tripSchedule';
 
 function getLinkLabel(url: string) {
   try {
@@ -63,6 +64,12 @@ export function StepDetailPage() {
     ? (/^[a-z][a-z0-9+.-]*:/i.test(step.link) ? step.link : `https://${step.link}`)
     : undefined;
   const durationLabel = step.estimatedDuration ? formatDuration(step.estimatedDuration) : undefined;
+  const dayOptions = getTripDayOptions(trip);
+  const dayLabel = dayOptions.find((d) => d.index === (step.dayIndex ?? 0))?.shortLabel || `Jour ${(step.dayIndex ?? 0) + 1}`;
+  const fromLabel = step.from?.trim();
+  const toLabel = step.to?.trim();
+  const fullFromLabel = fromLabel || 'Point de départ';
+  const fullToLabel = toLabel || 'Point d’arrivée';
   const infoRows = [
     step.departureTime ? { label: 'Départ', value: step.departureTime } : null,
     step.arrivalTime ? { label: 'Arrivée', value: step.arrivalTime } : null,
@@ -98,6 +105,11 @@ export function StepDetailPage() {
                     <h1 className="truncate text-xl font-bold text-stone-800 sm:text-2xl">
                       {step.title}
                     </h1>
+                    <p className="mt-1.5 break-words text-sm font-medium leading-snug text-stone-600">
+                      {fullFromLabel}
+                      <span className="mx-1.5 text-stone-400">→</span>
+                      {fullToLabel}
+                    </p>
                   </div>
                 </div>
 
@@ -133,7 +145,10 @@ export function StepDetailPage() {
                 </span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600">
                   <Route className="h-3.5 w-3.5" />
-                  Detail
+                  Détail
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2.5 py-1 text-xs font-semibold text-stone-600">
+                  {dayLabel}
                 </span>
               </div>
 
@@ -143,11 +158,11 @@ export function StepDetailPage() {
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
                       Départ
                     </p>
-                    <p className="font-brand mt-2 text-2xl font-bold tabular-nums text-stone-800 sm:text-[30px]">
+                    <p className="mt-2 font-sans text-2xl font-semibold tabular-nums text-stone-800 sm:text-[30px]">
                       {step.departureTime || '--:--'}
                     </p>
-                    <p className="mt-1 truncate text-sm font-semibold text-stone-600 sm:text-base">
-                      {step.from}
+                    <p className="mt-1 break-words text-xs font-semibold leading-snug text-stone-600 sm:text-base">
+                      {fullFromLabel}
                     </p>
                     <span className="mt-3 inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500" />
                   </div>
@@ -157,11 +172,11 @@ export function StepDetailPage() {
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
                       Arrivée
                     </p>
-                    <p className="font-brand mt-2 text-2xl font-bold tabular-nums text-stone-800 sm:text-[30px]">
+                    <p className="mt-2 font-sans text-2xl font-semibold tabular-nums text-stone-800 sm:text-[30px]">
                       {step.arrivalTime || '--:--'}
                     </p>
-                    <p className="mt-1 truncate text-sm font-semibold text-stone-600 sm:text-base">
-                      {step.to}
+                    <p className="mt-1 break-words text-xs font-semibold leading-snug text-stone-600 sm:text-base">
+                      {fullToLabel}
                     </p>
                     <span className="mt-3 inline-flex h-1.5 w-1.5 rounded-full bg-rose-500" />
                   </div>
@@ -207,7 +222,7 @@ export function StepDetailPage() {
                       <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">{row.label}</p>
                       <p
                         className={`text-sm font-semibold text-stone-700 ${
-                          row.label === 'Départ' || row.label === 'Arrivée' ? 'font-brand text-base' : ''
+                          row.label === 'Départ' || row.label === 'Arrivée' ? 'font-sans tabular-nums text-base' : ''
                         }`}
                       >
                         {row.value}
