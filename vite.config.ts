@@ -18,7 +18,7 @@ export default defineConfig({
         name: 'Kodo - Vos trajets au Japon',
         short_name: 'Kodo',
         description: 'Planifiez et naviguez vos trajets au Japon, etape par etape',
-        theme_color: '#0f766e',
+        theme_color: '#fafaf9',
         background_color: '#fafaf9',
         display: 'standalone',
         orientation: 'portrait-primary',
