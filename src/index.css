@@ -8,6 +8,7 @@
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
     overflow-x: hidden;
+    background-color: #fafaf9;
   }
 
   body {
@@ -18,6 +19,11 @@
     letter-spacing: -0.011em;
     overflow-x: hidden;
     padding-bottom: env(safe-area-inset-bottom);
+    background-color: #fafaf9;
+  }
+
+  #root {
+    min-height: 100%;
     background-color: #fafaf9;
   }
 
