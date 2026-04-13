@@ -7,7 +7,7 @@ interface PwaInstallButtonProps {
 }
 
 export function PwaInstallButton({ variant = 'inline' }: PwaInstallButtonProps) {
-  const { installState, install } = usePwaInstall();
+  const { installState, install, canPromptInstall } = usePwaInstall();
   const [showIosModal, setShowIosModal] = useState(false);
   const [showAndroidModal, setShowAndroidModal] = useState(false);
 
@@ -15,8 +15,12 @@ export function PwaInstallButton({ variant = 'inline' }: PwaInstallButtonProps) 
 
   async function handleClick() {
     if (installState === 'android') {
-      const prompted = await install();
-      if (!prompted) {
+      if (canPromptInstall) {
+        const prompted = await install();
+        if (!prompted) {
+          setShowAndroidModal(true);
+        }
+      } else {
         setShowAndroidModal(true);
       }
       return;

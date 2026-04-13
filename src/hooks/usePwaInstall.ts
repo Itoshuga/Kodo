@@ -24,31 +24,37 @@ export type InstallState = 'android' | 'ios' | 'unavailable';
 
 export function usePwaInstall() {
   const [installState, setInstallState] = useState<InstallState>('unavailable');
+  const [canPromptInstall, setCanPromptInstall] = useState(false);
 
   useEffect(() => {
     if (isInStandaloneMode()) {
       setInstallState('unavailable');
+      setCanPromptInstall(false);
       return;
     }
 
     if (isIos()) {
       setInstallState('ios');
+      setCanPromptInstall(false);
       return;
     }
 
     if (isAndroid()) {
       setInstallState('android');
+      setCanPromptInstall(Boolean(deferredPrompt));
     }
 
     function handlePrompt(e: Event) {
       e.preventDefault();
       deferredPrompt = e as BeforeInstallPromptEvent;
       setInstallState('android');
+      setCanPromptInstall(true);
     }
 
     function handleInstalled() {
       deferredPrompt = null;
       setInstallState('unavailable');
+      setCanPromptInstall(false);
     }
 
     window.addEventListener('beforeinstallprompt', handlePrompt);
@@ -56,6 +62,7 @@ export function usePwaInstall() {
 
     if (deferredPrompt) {
       setInstallState('android');
+      setCanPromptInstall(true);
     }
 
     return () => {
@@ -66,19 +73,16 @@ export function usePwaInstall() {
 
   const install = useCallback(async () => {
     if (!deferredPrompt) return false;
-    const promptEvent = deferredPrompt;
-    deferredPrompt = null;
-    await promptEvent.prompt();
-    const { outcome } = await promptEvent.userChoice;
+    await deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    let shown = true;
     if (outcome === 'accepted') {
+      deferredPrompt = null;
       setInstallState('unavailable');
-    } else if (isAndroid()) {
-      setInstallState('android');
-    } else {
-      setInstallState('unavailable');
+      setCanPromptInstall(false);
     }
-    return true;
+    return shown;
   }, []);
 
-  return { installState, install };
+  return { installState, install, canPromptInstall };
 }

@@ -26,11 +26,8 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Navigation principale"
-      className="fixed bottom-0 left-0 right-0 z-40 border-t border-stone-200/80 bg-stone-50 lg:hidden"
-      style={{
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        backgroundColor: '#fafaf9',
-      }}
+      className="fixed bottom-0 left-0 right-0 z-40 border-t border-stone-200/80 bg-white/90 backdrop-blur-xl lg:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <ul className="flex">
         {navItems.map(({ to, icon: Icon, label }) => (
