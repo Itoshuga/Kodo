@@ -6,7 +6,7 @@ interface PageLayoutProps {
 
 export function PageLayout({ children }: PageLayoutProps) {
   return (
-    <main className="min-h-screen overflow-x-hidden bg-stone-50">
+    <main className="min-h-screen min-h-dvh overflow-x-hidden bg-stone-50">
       {children}
     </main>
   );
