@@ -18,16 +18,20 @@ export async function registerUser(
   password: string,
   username: string
 ): Promise<UserProfile> {
+  const normalizedEmail = email.trim().toLowerCase();
   const cred = await createUserWithEmailAndPassword(auth, email, password);
   await updateProfile(cred.user, { displayName: username });
 
   const profile: UserProfile = {
     uid: cred.user.uid,
-    email,
+    email: normalizedEmail,
     username,
   };
 
-  await setDoc(doc(db, 'users', cred.user.uid), profile);
+  await setDoc(doc(db, 'users', cred.user.uid), {
+    ...profile,
+    emailLower: normalizedEmail,
+  });
   localStorage.setItem('kodo_user', JSON.stringify(profile));
   return profile;
 }
@@ -37,19 +41,36 @@ export async function loginUser(
   password: string
 ): Promise<UserProfile> {
   const cred = await signInWithEmailAndPassword(auth, email, password);
+  const normalizedFallbackEmail = email.trim().toLowerCase();
 
   let profile: UserProfile;
   const snap = await getDoc(doc(db, 'users', cred.user.uid));
 
   if (snap.exists()) {
-    profile = snap.data() as UserProfile;
+    const data = snap.data() as UserProfile & { emailLower?: string };
+    profile = {
+      uid: data.uid,
+      email: (data.email || normalizedFallbackEmail).toLowerCase(),
+      username: data.username,
+    };
+
+    // Ensure legacy user documents are normalized for invite lookups.
+    const emailLower = data.emailLower || profile.email.toLowerCase();
+    await setDoc(
+      doc(db, 'users', cred.user.uid),
+      { ...profile, emailLower },
+      { merge: true }
+    );
   } else {
     profile = {
       uid: cred.user.uid,
-      email: cred.user.email ?? email,
+      email: (cred.user.email ?? email).trim().toLowerCase(),
       username: cred.user.displayName ?? email.split('@')[0],
     };
-    await setDoc(doc(db, 'users', cred.user.uid), profile);
+    await setDoc(doc(db, 'users', cred.user.uid), {
+      ...profile,
+      emailLower: profile.email.toLowerCase(),
+    });
   }
 
   localStorage.setItem('kodo_user', JSON.stringify(profile));

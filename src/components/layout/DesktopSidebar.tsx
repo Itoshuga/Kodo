@@ -2,6 +2,7 @@ import { NavLink, Link, useLocation } from 'react-router-dom';
 import { Home, Map, Plus, WifiOff, Mail } from 'lucide-react';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { useAuth } from '../../contexts/AuthContext';
+import { useInvitesStore } from '../../store/invitesStore';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Accueil' },
@@ -13,6 +14,7 @@ const navItems = [
 export function DesktopSidebar() {
   const online = useOnlineStatus();
   const { user } = useAuth();
+  const pendingInviteCount = useInvitesStore((s) => s.pendingInvites.length);
   const location = useLocation();
   const isProfileActive =
     location.pathname.startsWith('/profile') || location.pathname.startsWith('/settings');
@@ -58,7 +60,20 @@ export function DesktopSidebar() {
                 }}
               >
                 <Icon className="h-[18px] w-[18px]" />
-                <span>{label}</span>
+                <span className="inline-flex items-center gap-2">
+                  {label}
+                  {to === '/invitations' && pendingInviteCount > 0 && (
+                    <>
+                      <span
+                        className="h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white"
+                        aria-hidden="true"
+                      />
+                      <span className="sr-only">
+                        {pendingInviteCount} invitation{pendingInviteCount > 1 ? 's' : ''} en attente
+                      </span>
+                    </>
+                  )}
+                </span>
               </NavLink>
             </li>
           ))}

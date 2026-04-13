@@ -35,7 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           const profile: UserProfile = {
             uid: firebaseUser.uid,
-            email: firebaseUser.email ?? '',
+            email: (firebaseUser.email ?? '').toLowerCase(),
             username: firebaseUser.displayName ?? '',
           };
           setUser(profile);

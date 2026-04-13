@@ -3,6 +3,7 @@ import {
   doc,
   getDocs,
   getDoc,
+  onSnapshot,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -10,6 +11,7 @@ import {
   where,
   arrayUnion,
   arrayRemove,
+  type Unsubscribe,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { TripInvite, TripCollaborator } from '../types/collaboration';
@@ -26,12 +28,44 @@ export async function sendInvite(
   fromUser: UserProfile,
   toEmail: string
 ): Promise<TripInvite> {
-  const usersQ = query(
-    collection(db, USERS),
-    where('email', '==', toEmail.toLowerCase().trim())
-  );
-  const usersSnap = await getDocs(usersQ);
-  const targetUser = usersSnap.docs[0]?.data() as UserProfile | undefined;
+  const normalizedEmail = toEmail.toLowerCase().trim();
+  const rawEmail = toEmail.trim();
+
+  let targetUser: UserProfile | undefined;
+
+  // Prefer normalized indexable field when available.
+  try {
+    const byLowerQ = query(
+      collection(db, USERS),
+      where('emailLower', '==', normalizedEmail)
+    );
+    const byLowerSnap = await getDocs(byLowerQ);
+    targetUser = byLowerSnap.docs[0]?.data() as UserProfile | undefined;
+  } catch {
+    targetUser = undefined;
+  }
+
+  // Backward-compatible fallback for existing users docs.
+  if (!targetUser) {
+    const byExactQ = query(
+      collection(db, USERS),
+      where('email', '==', normalizedEmail)
+    );
+    const byExactSnap = await getDocs(byExactQ);
+    targetUser = byExactSnap.docs[0]?.data() as UserProfile | undefined;
+  }
+  if (!targetUser && rawEmail !== normalizedEmail) {
+    const byRawQ = query(
+      collection(db, USERS),
+      where('email', '==', rawEmail)
+    );
+    const byRawSnap = await getDocs(byRawQ);
+    targetUser = byRawSnap.docs[0]?.data() as UserProfile | undefined;
+  }
+
+  if (!targetUser?.uid) {
+    throw new Error("Aucun compte n'est associé à cet email.");
+  }
 
   const invite: TripInvite = {
     id: generateId(),
@@ -39,8 +73,8 @@ export async function sendInvite(
     tripTitle,
     fromUid: fromUser.uid,
     fromUsername: fromUser.username,
-    toEmail: toEmail.toLowerCase().trim(),
-    toUid: targetUser?.uid ?? null,
+    toEmail: normalizedEmail,
+    toUid: targetUser.uid,
     status: 'pending',
     createdAt: new Date().toISOString(),
   };
@@ -52,13 +86,39 @@ export async function sendInvite(
 export async function fetchInvitesForUser(email: string): Promise<TripInvite[]> {
   const q = query(
     collection(db, INVITES),
-    where('toEmail', '==', email.toLowerCase().trim()),
-    where('status', '==', 'pending')
+    where('toEmail', '==', email.toLowerCase().trim())
   );
   const snap = await getDocs(q);
-  const invites = snap.docs.map((d) => d.data() as TripInvite);
+  const invites = snap.docs
+    .map((d) => d.data() as TripInvite)
+    .filter((invite) => invite.status === 'pending');
   invites.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
   return invites;
+}
+
+export function subscribePendingInvitesForUser(
+  email: string,
+  onInvites: (invites: TripInvite[]) => void,
+  onError?: (error: unknown) => void
+): Unsubscribe {
+  const q = query(
+    collection(db, INVITES),
+    where('toEmail', '==', email.toLowerCase().trim())
+  );
+
+  return onSnapshot(
+    q,
+    (snap) => {
+      const invites = snap.docs
+        .map((d) => d.data() as TripInvite)
+        .filter((invite) => invite.status === 'pending');
+      invites.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      onInvites(invites);
+    },
+    (error) => {
+      if (onError) onError(error);
+    }
+  );
 }
 
 export async function fetchInvitesForTrip(tripId: string): Promise<TripInvite[]> {

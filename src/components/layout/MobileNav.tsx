@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Map, Plus, Mail, UserRound } from 'lucide-react';
+import { useInvitesStore } from '../../store/invitesStore';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Accueil' },
@@ -11,6 +12,7 @@ const navItems = [
 
 export function MobileNav() {
   const location = useLocation();
+  const pendingInviteCount = useInvitesStore((s) => s.pendingInvites.length);
 
   function isNavItemActive(to: string, fallbackIsActive: boolean) {
     if (to === '/trips') {
@@ -50,10 +52,23 @@ export function MobileNav() {
 
                 return (
                   <>
-                    <Icon
-                      className="h-[22px] w-[22px]"
-                      strokeWidth={isItemActive ? 2.2 : 1.8}
-                    />
+                    <span className="relative">
+                      <Icon
+                        className="h-[22px] w-[22px]"
+                        strokeWidth={isItemActive ? 2.2 : 1.8}
+                      />
+                      {to === '/invitations' && pendingInviteCount > 0 && (
+                        <>
+                          <span
+                            className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-rose-500 ring-2 ring-white"
+                            aria-hidden="true"
+                          />
+                          <span className="sr-only">
+                            {pendingInviteCount} invitation{pendingInviteCount > 1 ? 's' : ''} en attente
+                          </span>
+                        </>
+                      )}
+                    </span>
                     <span className="mt-1 leading-none">{label}</span>
                   </>
                 );

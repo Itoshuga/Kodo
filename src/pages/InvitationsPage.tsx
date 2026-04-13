@@ -23,7 +23,8 @@ export function InvitationsPage() {
     try {
       const data = await fetchInvitesForUser(user.email);
       setInvites(data);
-    } catch {
+    } catch (error) {
+      console.error('[invitations] load error:', error);
       setInvites([]);
     }
     setLoading(false);

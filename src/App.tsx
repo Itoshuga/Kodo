@@ -1,11 +1,17 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 import { AppRouter } from './app/Router';
 import { MobileNav } from './components/layout/MobileNav';
 import { DesktopSidebar } from './components/layout/DesktopSidebar';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
+import { InviteToast } from './components/ui/InviteToast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthPage } from './pages/AuthPage';
+import {
+  subscribePendingInvitesForUser,
+  fetchInvitesForUser,
+} from './services/collaborationService';
+import { useInvitesStore } from './store/invitesStore';
 import { useTripsStore } from './store/tripsStore';
 import { Loader2 } from 'lucide-react';
 
@@ -14,6 +20,10 @@ function AuthenticatedApp() {
   const setUid = useTripsStore((s) => s.setUid);
   const loadTrips = useTripsStore((s) => s.loadTrips);
   const clear = useTripsStore((s) => s.clear);
+  const setPendingInvites = useInvitesStore((s) => s.setPendingInvites);
+  const enqueueInviteToast = useInvitesStore((s) => s.enqueueInviteToast);
+  const clearInvites = useInvitesStore((s) => s.clear);
+  const previousInviteIdsRef = useRef<Set<string> | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -24,12 +34,55 @@ function AuthenticatedApp() {
     }
   }, [user, setUid, loadTrips, clear]);
 
+  useEffect(() => {
+    if (!user?.email) {
+      previousInviteIdsRef.current = null;
+      clearInvites();
+      return;
+    }
+
+    const unsubscribe = subscribePendingInvitesForUser(
+      user.email,
+      (invites) => {
+        setPendingInvites(invites);
+
+        const previousIds = previousInviteIdsRef.current;
+        const currentIds = new Set(invites.map((invite) => invite.id));
+
+        if (previousIds) {
+          invites.forEach((invite) => {
+            if (!previousIds.has(invite.id)) {
+              enqueueInviteToast(invite);
+            }
+          });
+        }
+
+        previousInviteIdsRef.current = currentIds;
+      },
+      async (error) => {
+        console.error('[invites] subscribe error:', error);
+        try {
+          const fallbackInvites = await fetchInvitesForUser(user.email);
+          setPendingInvites(fallbackInvites);
+        } catch (fallbackError) {
+          console.error('[invites] fallback fetch error:', fallbackError);
+          setPendingInvites([]);
+        }
+      }
+    );
+
+    return () => {
+      unsubscribe();
+    };
+  }, [user?.email, setPendingInvites, enqueueInviteToast, clearInvites]);
+
   return (
     <BrowserRouter>
       <OfflineIndicator />
       <DesktopSidebar />
       <AppRouter />
       <MobileNav />
+      <InviteToast />
     </BrowserRouter>
   );
 }

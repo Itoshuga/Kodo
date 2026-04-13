@@ -102,8 +102,10 @@ export function CollaboratorsPanel({ trip, onTripUpdated }: CollaboratorsPanelPr
       setSuccess('Invitation envoyée !');
       await loadData();
       setTimeout(() => setSuccess(''), 3000);
-    } catch {
-      setError("Erreur lors de l'envoi.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Erreur lors de l'envoi.";
+      setError(message);
+      console.error('[collaboration] sendInvite error:', err);
     }
     setSending(false);
   }
