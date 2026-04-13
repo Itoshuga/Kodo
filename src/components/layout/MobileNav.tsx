@@ -1,21 +1,23 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Map, Plus, Mail, LogOut } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
+import { Home, Map, Plus, Mail, UserRound } from 'lucide-react';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Accueil' },
   { to: '/trips', icon: Map, label: 'Trajets' },
   { to: '/trips/new', icon: Plus, label: 'Nouveau' },
   { to: '/invitations', icon: Mail, label: 'Invitations' },
+  { to: '/profile', icon: UserRound, label: 'Profil' },
 ] as const;
 
 export function MobileNav() {
-  const { logout } = useAuth();
   const location = useLocation();
 
   function isNavItemActive(to: string, fallbackIsActive: boolean) {
     if (to === '/trips') {
       return location.pathname.startsWith('/trips') && !location.pathname.startsWith('/trips/new');
+    }
+    if (to === '/profile') {
+      return location.pathname.startsWith('/profile') || location.pathname.startsWith('/settings');
     }
 
     return fallbackIsActive;
@@ -59,16 +61,6 @@ export function MobileNav() {
             </NavLink>
           </li>
         ))}
-        <li className="flex-1">
-          <button
-            type="button"
-            onClick={logout}
-            className="flex h-14 w-full flex-col items-center justify-center text-[11px] font-medium text-stone-400 transition-colors duration-150 active:text-stone-600"
-          >
-            <LogOut className="h-[22px] w-[22px]" strokeWidth={1.8} />
-            <span className="mt-1 leading-none">Quitter</span>
-          </button>
-        </li>
       </ul>
     </nav>
   );

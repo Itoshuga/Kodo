@@ -1,5 +1,5 @@
-import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Map, Plus, WifiOff, LogOut, Mail } from 'lucide-react';
+import { NavLink, Link, useLocation } from 'react-router-dom';
+import { Home, Map, Plus, WifiOff, Mail } from 'lucide-react';
 import { useOnlineStatus } from '../../hooks/useOnlineStatus';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -12,8 +12,12 @@ const navItems = [
 
 export function DesktopSidebar() {
   const online = useOnlineStatus();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
+  const isProfileActive =
+    location.pathname.startsWith('/profile') || location.pathname.startsWith('/settings');
+  const displayName = user?.username?.trim() || 'Utilisateur';
+  const avatar = displayName.charAt(0).toUpperCase();
 
   function isNavItemActive(to: string, fallbackIsActive: boolean) {
     if (to === '/trips') {
@@ -63,14 +67,23 @@ export function DesktopSidebar() {
 
       <div className="border-t border-stone-100 px-5 py-4">
         {user && (
-          <div className="mb-3 flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-teal-50 text-xs font-bold text-teal-700">
-              {user.username.charAt(0).toUpperCase()}
+          <Link
+            to="/profile"
+            className={`mb-3 flex items-center gap-3 rounded-xl px-2 py-2 transition-colors ${
+              isProfileActive
+                ? 'bg-teal-50 text-teal-700'
+                : 'text-stone-700 hover:bg-stone-50'
+            }`}
+          >
+            <div className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${
+              isProfileActive ? 'bg-teal-100 text-teal-700' : 'bg-teal-50 text-teal-700'
+            }`}>
+              {avatar}
             </div>
-            <span className="truncate text-sm font-medium text-stone-700">{user.username}</span>
-          </div>
+            <span className="truncate text-sm font-medium">{displayName}</span>
+          </Link>
         )}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center">
           {!online ? (
             <div className="flex items-center gap-2 text-xs font-medium text-amber-600">
               <WifiOff className="h-3.5 w-3.5" />
@@ -81,14 +94,6 @@ export function DesktopSidebar() {
               Disponible hors-ligne
             </p>
           )}
-          <button
-            type="button"
-            onClick={logout}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
-          >
-            <LogOut className="h-3.5 w-3.5" />
-            Deconnexion
-          </button>
         </div>
       </div>
     </aside>

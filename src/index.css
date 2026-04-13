@@ -131,6 +131,11 @@
     box-sizing: border-box;
   }
 
+  .page-container-centered {
+    @apply mx-auto w-full max-w-lg px-4 pb-24 pt-6 lg:max-w-3xl lg:px-6 lg:pb-10 lg:pt-10;
+    box-sizing: border-box;
+  }
+
   .section-title {
     @apply text-xs font-semibold uppercase tracking-wider text-stone-400;
   }

@@ -7,6 +7,8 @@ import { EditTripPage } from '../pages/EditTripPage';
 import { AddStepPage } from '../pages/AddStepPage';
 import { EditStepPage } from '../pages/EditStepPage';
 import { InvitationsPage } from '../pages/InvitationsPage';
+import { ProfilePage } from '../pages/ProfilePage';
+import { SettingsPage } from '../pages/SettingsPage';
 
 export function AppRouter() {
   return (
@@ -19,6 +21,8 @@ export function AppRouter() {
       <Route path="/trips/:id/steps/new" element={<AddStepPage />} />
       <Route path="/trips/:id/steps/:stepId/edit" element={<EditStepPage />} />
       <Route path="/invitations" element={<InvitationsPage />} />
+      <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/settings" element={<SettingsPage />} />
     </Routes>
   );
 }
