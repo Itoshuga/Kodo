@@ -152,6 +152,13 @@ export function TripDetailPage() {
                 <ArrowLeft className="h-5 w-5" />
               </Link>
               <div className="flex items-center gap-2">
+                <CollaboratorsPanel
+                  trip={trip}
+                  onTripUpdated={loadTrips}
+                  triggerMode="icon"
+                  triggerClassName="relative flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
+                  badgeClassName="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-[10px] font-bold text-white ring-2 ring-[#15243a]"
+                />
                 <Link
                   to={`/trips/${tripId}/edit`}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
@@ -208,7 +215,6 @@ export function TripDetailPage() {
               <Route className="h-3.5 w-3.5 text-stone-400" />
               {trip.steps.length} étape{trip.steps.length !== 1 ? 's' : ''}
             </span>
-            <CollaboratorsPanel trip={trip} onTripUpdated={loadTrips} />
           </div>
 
           <div className="mt-8">
