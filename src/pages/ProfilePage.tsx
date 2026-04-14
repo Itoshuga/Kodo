@@ -104,7 +104,7 @@ export function ProfilePage() {
               className="btn-ghost rounded-xl border border-stone-200 bg-white"
             >
               <Settings className="h-4 w-4" />
-              ParamÃ¨tres
+              Paramètres
             </Link>
           </div>
 
@@ -130,7 +130,7 @@ export function ProfilePage() {
               <div className="flex flex-wrap items-center justify-center gap-2 text-xs sm:justify-start">
                 <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2.5 py-1 font-semibold text-white backdrop-blur-sm">
                   <BadgeCheck className="h-3.5 w-3.5" />
-                  VÃ©rifiÃ©
+                  Vérifié
                 </span>
                 <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-semibold ${accent.chipClass}`}>
                   <MapPin className="h-3.5 w-3.5" />

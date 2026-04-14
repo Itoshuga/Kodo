@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -9,6 +9,8 @@ import {
   Pencil,
   Route,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { StepTimeline } from '../components/trips/StepTimeline';
@@ -30,6 +32,9 @@ export function TripDetailPage() {
   const trip = trips.find((t) => t.id === id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const dayScrollerRef = useRef<HTMLDivElement | null>(null);
+  const [canScrollDaysLeft, setCanScrollDaysLeft] = useState(false);
+  const [canScrollDaysRight, setCanScrollDaysRight] = useState(false);
 
   if (!trip) {
     return (
@@ -80,10 +85,50 @@ export function TripDetailPage() {
   }));
   const activeDay = itineraryByDay.find((d) => d.index === selectedDayIndex) ?? itineraryByDay[0];
 
+  function updateDayScrollerState() {
+    const node = dayScrollerRef.current;
+    if (!node) return;
+    const maxScrollLeft = node.scrollWidth - node.clientWidth;
+    setCanScrollDaysLeft(node.scrollLeft > 4);
+    setCanScrollDaysRight(node.scrollLeft < maxScrollLeft - 4);
+  }
+
+  function scrollDayCards(direction: 'left' | 'right') {
+    const node = dayScrollerRef.current;
+    if (!node) return;
+    const amount = Math.max(180, Math.floor(node.clientWidth * 0.6));
+    const next = direction === 'left' ? -amount : amount;
+    node.scrollBy({ left: next, behavior: 'smooth' });
+    window.setTimeout(updateDayScrollerState, 220);
+  }
+
+  function getDayCardParts(date?: string) {
+    if (!date) return null;
+    const value = new Date(`${date}T00:00:00`);
+    if (Number.isNaN(value.getTime())) return null;
+
+    return {
+      weekday: value.toLocaleDateString('fr-FR', { weekday: 'short' }).replace('.', ''),
+      day: value.toLocaleDateString('fr-FR', { day: 'numeric' }),
+      month: value.toLocaleDateString('fr-FR', { month: 'short' }).replace('.', ''),
+    };
+  }
+
   async function handleDelete() {
     await deleteTrip(tripId);
     navigate('/trips');
   }
+
+  useEffect(() => {
+    const rafId = window.requestAnimationFrame(updateDayScrollerState);
+    const onResize = () => updateDayScrollerState();
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [allDayOptions.length, selectedDayIndex]);
 
   return (
     <PageLayout>
@@ -184,23 +229,85 @@ export function TripDetailPage() {
               />
             ) : (
               <>
-                <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="w-full sm:w-[320px]">
-                    <label htmlFor="trip-day-select" className="mb-1 block text-xs font-semibold uppercase tracking-wider text-stone-400">
-                      Jour affiché
-                    </label>
-                    <select
-                      id="trip-day-select"
-                      value={activeDay?.index ?? 0}
-                      onChange={(e) => setSelectedDayIndex(parseInt(e.target.value, 10))}
-                      className="input-field py-2.5 text-sm font-medium"
+                <div className="mb-5">
+                  <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-stone-400">
+                    Jour affiché
+                  </label>
+                  <div className="relative rounded-2xl border border-stone-200/80 bg-white p-2 shadow-sm">
+                    {canScrollDaysLeft && (
+                      <button
+                        type="button"
+                        onClick={() => scrollDayCards('left')}
+                        className="absolute left-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-stone-200 bg-white/95 p-1.5 text-stone-500 shadow-sm transition-colors hover:border-stone-300 hover:text-stone-700"
+                        aria-label="Voir les jours précédents"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+                    )}
+                    {canScrollDaysRight && (
+                      <button
+                        type="button"
+                        onClick={() => scrollDayCards('right')}
+                        className="absolute right-2 top-1/2 z-10 -translate-y-1/2 rounded-full border border-stone-200 bg-white/95 p-1.5 text-stone-500 shadow-sm transition-colors hover:border-stone-300 hover:text-stone-700"
+                        aria-label="Voir les jours suivants"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    )}
+                    <div
+                      ref={dayScrollerRef}
+                      onScroll={updateDayScrollerState}
+                      className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
                     >
-                      {allDayOptions.map((option) => (
-                        <option key={option.index} value={option.index}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                      {allDayOptions.map((option) => {
+                        const isActive = (activeDay?.index ?? 0) === option.index;
+                        const parts = getDayCardParts(option.date);
+
+                        return (
+                          <button
+                            key={option.index}
+                            type="button"
+                            onClick={() => setSelectedDayIndex(option.index)}
+                            className={`group min-w-[112px] flex-shrink-0 rounded-xl border px-3 py-2.5 text-left transition-all duration-150 ${
+                              isActive
+                                ? 'border-teal-300 bg-teal-50 text-teal-800 shadow-sm'
+                                : 'border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50'
+                            }`}
+                            aria-label={option.label}
+                            aria-pressed={isActive}
+                          >
+                            <p className={`text-[11px] font-semibold uppercase tracking-wider ${
+                              isActive ? 'text-teal-600' : 'text-stone-400'
+                            }`}>
+                              {option.shortLabel}
+                            </p>
+                            {parts ? (
+                              <>
+                                <p className={`mt-1 text-[11px] uppercase tracking-wide ${
+                                  isActive ? 'text-teal-700/90' : 'text-stone-400'
+                                }`}>
+                                  {parts.weekday}
+                                </p>
+                                <p className={`font-brand text-xl leading-tight ${
+                                  isActive ? 'text-teal-800' : 'text-stone-800'
+                                }`}>
+                                  {parts.day}
+                                </p>
+                                <p className={`text-[11px] uppercase tracking-wide ${
+                                  isActive ? 'text-teal-700/90' : 'text-stone-500'
+                                }`}>
+                                  {parts.month}
+                                </p>
+                              </>
+                            ) : (
+                              <p className="mt-2 text-xs font-medium text-stone-500">
+                                Sans date
+                              </p>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
 
@@ -246,3 +353,4 @@ export function TripDetailPage() {
     </PageLayout>
   );
 }
+
