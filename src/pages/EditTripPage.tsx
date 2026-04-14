@@ -21,6 +21,7 @@ export function EditTripPage() {
   const [startDate, setStartDate] = useState(trip?.startDate ?? trip?.date ?? '');
   const [endDate, setEndDate] = useState(trip?.endDate ?? trip?.startDate ?? trip?.date ?? '');
   const [dateError, setDateError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!trip) {
@@ -48,6 +49,7 @@ export function EditTripPage() {
       setDateError('La date de retour doit être après la date de départ.');
       return;
     }
+    setSubmitError('');
     setIsSubmitting(true);
     try {
       const trimmedTitle = title.trim();
@@ -74,6 +76,11 @@ export function EditTripPage() {
         coverImage,
       });
       navigate(`/trips/${trip!.id}`);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible d'enregistrer ce trajet pour le moment.";
+      setSubmitError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -209,6 +216,9 @@ export function EditTripPage() {
 
                 {dateError && (
                   <p className="text-sm font-medium text-red-600">{dateError}</p>
+                )}
+                {submitError && (
+                  <p className="text-sm font-medium text-red-600">{submitError}</p>
                 )}
 
                 <div className="relative">

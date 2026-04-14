@@ -21,6 +21,10 @@ function cacheTrips(trips: Trip[]): void {
   } catch { /* quota exceeded */ }
 }
 
+export function setCachedTrips(trips: Trip[]): void {
+  cacheTrips(trips);
+}
+
 export function getCachedTrips(): Trip[] {
   const raw = localStorage.getItem(CACHE_KEY);
   if (!raw) return [];

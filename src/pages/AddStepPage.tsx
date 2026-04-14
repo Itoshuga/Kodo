@@ -35,6 +35,8 @@ export function AddStepPage() {
   const [platform, setPlatform] = useState('');
   const [link, setLink] = useState('');
   const [note, setNote] = useState('');
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!trip) {
     return (
@@ -78,23 +80,34 @@ export function AddStepPage() {
   async function handleSubmit() {
     if (!canGoStep2) return;
 
-    await addStep(trip.id, {
-      id: generateId(),
-      order: trip.steps.length,
-      dayIndex,
-      type,
-      title: title.trim(),
-      from: typeConfig.requiresFrom ? from.trim() : from.trim() || undefined,
-      to: typeConfig.requiresTo ? to.trim() : to.trim() || undefined,
-      departureTime: departureTime || undefined,
-      arrivalTime: arrivalTime || undefined,
-      estimatedDuration: estimatedDuration ? parseInt(estimatedDuration, 10) : undefined,
-      lineName: typeConfig.showLinePlatform ? lineName.trim() || undefined : undefined,
-      platform: typeConfig.showLinePlatform ? platform.trim() || undefined : undefined,
-      link: normalizeStepLink(link),
-      note: note.trim() || undefined,
-    });
-    navigate(`/trips/${trip.id}`);
+    setSubmitError('');
+    setIsSubmitting(true);
+    try {
+      await addStep(trip.id, {
+        id: generateId(),
+        order: trip.steps.length,
+        dayIndex,
+        type,
+        title: title.trim(),
+        from: typeConfig.requiresFrom ? from.trim() : from.trim() || undefined,
+        to: typeConfig.requiresTo ? to.trim() : to.trim() || undefined,
+        departureTime: departureTime || undefined,
+        arrivalTime: arrivalTime || undefined,
+        estimatedDuration: estimatedDuration ? parseInt(estimatedDuration, 10) : undefined,
+        lineName: typeConfig.showLinePlatform ? lineName.trim() || undefined : undefined,
+        platform: typeConfig.showLinePlatform ? platform.trim() || undefined : undefined,
+        link: normalizeStepLink(link),
+        note: note.trim() || undefined,
+      });
+      navigate(`/trips/${trip.id}`);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible d'enregistrer cette etape pour le moment.";
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   function goBack() {
@@ -405,11 +418,15 @@ export function AddStepPage() {
                 <button
                   type="button"
                   onClick={handleSubmit}
+                  disabled={isSubmitting}
                   className="btn-primary form-nav-primary-btn flex-1"
                 >
-                  Ajouter l’étape
+                  {isSubmitting ? 'Enregistrement...' : "Ajouter l'etape"}
                 </button>
               </div>
+              {submitError && (
+                <p className="mt-3 text-sm font-medium text-red-600">{submitError}</p>
+              )}
             </div>
           )}
         </div>

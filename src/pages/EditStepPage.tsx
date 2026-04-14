@@ -37,6 +37,9 @@ export function EditStepPage() {
   const [link, setLink] = useState(existingStep?.link ?? '');
   const [note, setNote] = useState(existingStep?.note ?? '');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!trip || !existingStep) {
     return (
@@ -79,27 +82,50 @@ export function EditStepPage() {
 
   async function handleSubmit() {
     if (!canGoStep2) return;
-    await updateStep(trip.id, {
-      ...existingStep,
-      type,
-      dayIndex,
-      title: title.trim(),
-      from: typeConfig.requiresFrom ? from.trim() : from.trim() || undefined,
-      to: typeConfig.requiresTo ? to.trim() : to.trim() || undefined,
-      departureTime: departureTime || undefined,
-      arrivalTime: arrivalTime || undefined,
-      estimatedDuration: estimatedDuration ? parseInt(estimatedDuration, 10) : undefined,
-      lineName: typeConfig.showLinePlatform ? lineName.trim() || undefined : undefined,
-      platform: typeConfig.showLinePlatform ? platform.trim() || undefined : undefined,
-      link: normalizeStepLink(link),
-      note: note.trim() || undefined,
-    });
-    navigate(`/trips/${trip.id}`);
+    setSubmitError('');
+    setIsSubmitting(true);
+    try {
+      await updateStep(trip.id, {
+        ...existingStep,
+        type,
+        dayIndex,
+        title: title.trim(),
+        from: typeConfig.requiresFrom ? from.trim() : from.trim() || undefined,
+        to: typeConfig.requiresTo ? to.trim() : to.trim() || undefined,
+        departureTime: departureTime || undefined,
+        arrivalTime: arrivalTime || undefined,
+        estimatedDuration: estimatedDuration ? parseInt(estimatedDuration, 10) : undefined,
+        lineName: typeConfig.showLinePlatform ? lineName.trim() || undefined : undefined,
+        platform: typeConfig.showLinePlatform ? platform.trim() || undefined : undefined,
+        link: normalizeStepLink(link),
+        note: note.trim() || undefined,
+      });
+      navigate(`/trips/${trip.id}`);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible d'enregistrer cette etape pour le moment.";
+      setSubmitError(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   async function handleDelete() {
-    await deleteStep(trip.id, existingStep.id);
-    navigate(`/trips/${trip.id}`);
+    setSubmitError('');
+    setIsDeleting(true);
+    try {
+      await deleteStep(trip.id, existingStep.id);
+      navigate(`/trips/${trip.id}`);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible de supprimer cette etape pour le moment.";
+      setSubmitError(message);
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
   }
 
   function goBack() {
@@ -123,6 +149,7 @@ export function EditStepPage() {
             <button
               type="button"
               onClick={() => setShowDeleteModal(true)}
+              disabled={isDeleting || isSubmitting}
               className="flex h-10 w-10 items-center justify-center rounded-full bg-red-50 text-red-500 transition-colors hover:bg-red-100"
               aria-label="Supprimer l’étape"
             >
@@ -420,11 +447,15 @@ export function EditStepPage() {
                 <button
                   type="button"
                   onClick={handleSubmit}
+                  disabled={isSubmitting || isDeleting}
                   className="btn-primary form-nav-primary-btn flex-1"
                 >
-                  Enregistrer
+                  {isSubmitting ? 'Enregistrement...' : 'Enregistrer'}
                 </button>
               </div>
+              {submitError && (
+                <p className="mt-3 text-sm font-medium text-red-600">{submitError}</p>
+              )}
             </div>
           )}
         </div>
@@ -434,7 +465,7 @@ export function EditStepPage() {
         open={showDeleteModal}
         title="Supprimer cette étape ?"
         description="Cette action est irréversible. L'étape sera définitivement supprimée."
-        confirmLabel="Supprimer"
+        confirmLabel={isDeleting ? 'Suppression...' : 'Supprimer'}
         variant="danger"
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteModal(false)}

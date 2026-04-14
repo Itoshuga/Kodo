@@ -23,7 +23,16 @@ import {
   loadProfilePreferences,
   type ProfilePreferences,
 } from '../utils/profilePreferences';
-import type { TransportType } from '../types/trip';
+import type { TransportType, TripStep } from '../types/trip';
+
+function getTripSteps(trip: { steps?: unknown }): TripStep[] {
+  return Array.isArray(trip.steps) ? (trip.steps as TripStep[]) : [];
+}
+
+function normalizePlace(value?: string): string {
+  if (typeof value !== 'string') return '';
+  return value.trim().toLowerCase();
+}
 
 export function ProfilePage() {
   const { user, logout } = useAuth();
@@ -45,21 +54,28 @@ export function ProfilePage() {
   const tripCount = trips.length;
 
   const stepCount = useMemo(
-    () => trips.reduce((sum, trip) => sum + trip.steps.length, 0),
+    () => trips.reduce((sum, trip) => sum + getTripSteps(trip).length, 0),
     [trips]
   );
 
   const totalMinutes = useMemo(
-    () => trips.reduce((sum, trip) => sum + trip.steps.reduce((acc, step) => acc + (step.estimatedDuration || 0), 0), 0),
+    () => trips.reduce((sum, trip) => (
+      sum + getTripSteps(trip).reduce((acc, step) => {
+        const minutes = Number(step.estimatedDuration || 0);
+        return acc + (Number.isFinite(minutes) ? minutes : 0);
+      }, 0)
+    ), 0),
     [trips]
   );
 
   const placeCount = useMemo(() => {
     const places = new Set<string>();
     trips.forEach((trip) => {
-      trip.steps.forEach((step) => {
-        if (step.from.trim()) places.add(step.from.trim().toLowerCase());
-        if (step.to.trim()) places.add(step.to.trim().toLowerCase());
+      getTripSteps(trip).forEach((step) => {
+        const from = normalizePlace(step.from);
+        const to = normalizePlace(step.to);
+        if (from) places.add(from);
+        if (to) places.add(to);
       });
     });
     return places.size;
@@ -73,9 +89,22 @@ export function ProfilePage() {
 
   const topTransports = useMemo(() => {
     const counts: Partial<Record<TransportType, number>> = {};
+    const validTypes = new Set<TransportType>([
+      'walk',
+      'metro',
+      'train',
+      'bus',
+      'taxi',
+      'shinkansen',
+      'wait',
+      'transfer',
+      'visit',
+      'other',
+    ]);
 
     trips.forEach((trip) => {
-      trip.steps.forEach((step) => {
+      getTripSteps(trip).forEach((step) => {
+        if (!step.type || !validTypes.has(step.type)) return;
         counts[step.type] = (counts[step.type] || 0) + 1;
       });
     });
@@ -250,5 +279,4 @@ export function ProfilePage() {
     </PageLayout>
   );
 }
-
 

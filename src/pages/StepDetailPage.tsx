@@ -37,6 +37,7 @@ export function StepDetailPage() {
   const trip = trips.find((t) => t.id === id);
   const step = trip?.steps.find((s) => s.id === stepId);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
 
   if (!trip || !step) {
     return (
@@ -79,8 +80,17 @@ export function StepDetailPage() {
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
   async function handleDelete() {
-    await deleteStep(trip.id, step.id);
-    navigate(`/trips/${trip.id}`);
+    setDeleteError('');
+    try {
+      await deleteStep(trip.id, step.id);
+      navigate(`/trips/${trip.id}`);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible de supprimer cette etape pour le moment.";
+      setDeleteError(message);
+      setShowDeleteModal(false);
+    }
   }
 
   return (
@@ -88,6 +98,11 @@ export function StepDetailPage() {
       <div className="flex min-h-screen flex-col lg:ml-72">
         <div className="page-container-centered lg:pb-10">
           <div className="mx-auto w-full max-w-3xl space-y-4">
+            {deleteError && (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+                {deleteError}
+              </div>
+            )}
             <section className="rounded-3xl border border-stone-200/80 bg-white p-4 shadow-sm sm:p-5">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">

@@ -19,6 +19,7 @@ export function CreateTripPage() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [dateError, setDateError] = useState('');
+  const [submitError, setSubmitError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canContinue = title.trim().length > 0;
@@ -35,6 +36,7 @@ export function CreateTripPage() {
       return;
     }
 
+    setSubmitError('');
     setIsSubmitting(true);
     try {
       const trimmedTitle = title.trim();
@@ -60,6 +62,11 @@ export function CreateTripPage() {
 
       await addTrip(trip);
       navigate(`/trips/${trip.id}`);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible d'enregistrer ce trajet pour le moment.";
+      setSubmitError(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -191,6 +198,9 @@ export function CreateTripPage() {
 
                 {dateError && (
                   <p className="text-sm font-medium text-red-600">{dateError}</p>
+                )}
+                {submitError && (
+                  <p className="text-sm font-medium text-red-600">{submitError}</p>
                 )}
 
                 <div className="relative">

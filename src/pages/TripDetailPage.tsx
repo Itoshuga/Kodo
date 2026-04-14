@@ -31,10 +31,36 @@ export function TripDetailPage() {
   const loadTrips = useTripsStore((s) => s.loadTrips);
   const trip = trips.find((t) => t.id === id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteError, setDeleteError] = useState('');
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const dayScrollerRef = useRef<HTMLDivElement | null>(null);
   const [canScrollDaysLeft, setCanScrollDaysLeft] = useState(false);
   const [canScrollDaysRight, setCanScrollDaysRight] = useState(false);
+
+  function updateDayScrollerState() {
+    const node = dayScrollerRef.current;
+    if (!node) return;
+    const maxScrollLeft = node.scrollWidth - node.clientWidth;
+    setCanScrollDaysLeft(node.scrollLeft > 4);
+    setCanScrollDaysRight(node.scrollLeft < maxScrollLeft - 4);
+  }
+
+  useEffect(() => {
+    if (!trip) {
+      setCanScrollDaysLeft(false);
+      setCanScrollDaysRight(false);
+      return;
+    }
+
+    const rafId = window.requestAnimationFrame(updateDayScrollerState);
+    const onResize = () => updateDayScrollerState();
+    window.addEventListener('resize', onResize);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [trip, selectedDayIndex]);
 
   if (!trip) {
     return (
@@ -85,14 +111,6 @@ export function TripDetailPage() {
   }));
   const activeDay = itineraryByDay.find((d) => d.index === selectedDayIndex) ?? itineraryByDay[0];
 
-  function updateDayScrollerState() {
-    const node = dayScrollerRef.current;
-    if (!node) return;
-    const maxScrollLeft = node.scrollWidth - node.clientWidth;
-    setCanScrollDaysLeft(node.scrollLeft > 4);
-    setCanScrollDaysRight(node.scrollLeft < maxScrollLeft - 4);
-  }
-
   function scrollDayCards(direction: 'left' | 'right') {
     const node = dayScrollerRef.current;
     if (!node) return;
@@ -115,20 +133,18 @@ export function TripDetailPage() {
   }
 
   async function handleDelete() {
-    await deleteTrip(tripId);
-    navigate('/trips');
+    setDeleteError('');
+    try {
+      await deleteTrip(tripId);
+      navigate('/trips');
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible de supprimer ce trajet pour le moment.";
+      setDeleteError(message);
+      setShowDeleteModal(false);
+    }
   }
-
-  useEffect(() => {
-    const rafId = window.requestAnimationFrame(updateDayScrollerState);
-    const onResize = () => updateDayScrollerState();
-    window.addEventListener('resize', onResize);
-
-    return () => {
-      window.cancelAnimationFrame(rafId);
-      window.removeEventListener('resize', onResize);
-    };
-  }, [allDayOptions.length, selectedDayIndex]);
 
   return (
     <PageLayout>
@@ -185,6 +201,12 @@ export function TripDetailPage() {
               )}
             </div>
           </div>
+
+          {deleteError && (
+            <div className="mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
+              {deleteError}
+            </div>
+          )}
 
           <div className="mt-5 flex flex-wrap gap-2">
             {dateRange && (

@@ -5,6 +5,7 @@ import { MobileNav } from './components/layout/MobileNav';
 import { DesktopSidebar } from './components/layout/DesktopSidebar';
 import { OfflineIndicator } from './components/ui/OfflineIndicator';
 import { InviteToast } from './components/ui/InviteToast';
+import { TripSyncToast } from './components/ui/TripSyncToast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { AuthPage } from './pages/AuthPage';
 import {
@@ -83,6 +84,7 @@ function AuthenticatedApp() {
       <AppRouter />
       <MobileNav />
       <InviteToast />
+      <TripSyncToast />
     </BrowserRouter>
   );
 }
