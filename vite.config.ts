@@ -15,9 +15,9 @@ export default defineConfig({
         'apple-touch-icon.png',
       ],
       manifest: {
-        name: 'Kodo - Vos trajets au Japon',
+        name: 'Kodo - Vos trajets de voyage',
         short_name: 'Kodo',
-        description: 'Planifiez et naviguez vos trajets au Japon, etape par etape',
+        description: 'Planifiez et naviguez vos trajets de voyage, etape par etape',
         theme_color: '#fafaf9',
         background_color: '#fafaf9',
         display: 'standalone',

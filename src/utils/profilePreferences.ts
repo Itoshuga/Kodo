@@ -17,7 +17,7 @@ export interface AccentOption {
 }
 
 export const DEFAULT_PROFILE_PREFERENCES: ProfilePreferences = {
-  city: 'Tokyo',
+  city: 'Votre ville',
   bio: 'Je planifie mes trajets comme un carnet de voyage: simple, clair et précis.',
   style: 'culture',
   accent: 'forest',
@@ -40,7 +40,7 @@ export const ACCENT_OPTIONS: AccentOption[] = [
   },
   {
     key: 'forest',
-    label: 'Kyoto Garden',
+    label: 'Garden Breeze',
     coverClass: 'from-emerald-600 via-teal-600 to-green-700',
     chipClass: 'bg-emerald-100/95 text-emerald-700',
     ringClass: 'ring-emerald-200',

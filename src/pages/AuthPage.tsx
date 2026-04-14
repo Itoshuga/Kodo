@@ -70,7 +70,7 @@ export function AuthPage() {
               <span className="font-brand text-3xl font-bold text-white">Kodo</span>
             </div>
             <p className="max-w-md text-lg leading-relaxed text-white/80">
-              Planifiez chaque étape de vos trajets au Japon. Métro, Shinkansen, marche à pied -- tout est là, même hors-ligne.
+              Planifiez chaque étape de vos trajets de voyage. Train, bus, marche à pied -- tout est là, même hors-ligne.
             </p>
           </div>
         </div>

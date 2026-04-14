@@ -118,7 +118,7 @@ export function SettingsPage() {
                     value={prefs.city}
                     onChange={(e) => updatePref('city', e.target.value)}
                     className="input-field"
-                    placeholder="Tokyo"
+                    placeholder="Votre ville"
                   />
                 </div>
                 <div>

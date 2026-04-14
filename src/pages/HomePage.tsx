@@ -35,8 +35,8 @@ export function HomePage() {
                 </h1>
               </div>
               <p className="max-w-md text-base leading-relaxed text-teal-100 lg:text-lg">
-                Planifiez chaque étape de vos trajets au Japon.
-                Métro, Shinkansen, marche à pied -- tout est là, même hors-ligne.
+                Planifiez chaque étape de vos trajets de voyage.
+                Métro, train, marche à pied -- tout est là, même hors-ligne.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <Link
@@ -66,7 +66,7 @@ export function HomePage() {
             {[
               { icon: Footprints, label: 'Marche', bg: 'bg-green-50', fg: 'text-green-600' },
               { icon: TrainFront, label: 'Train', bg: 'bg-orange-50', fg: 'text-orange-600' },
-              { icon: Zap, label: 'Shinkansen', bg: 'bg-red-50', fg: 'text-red-600' },
+              { icon: Zap, label: 'Express', bg: 'bg-red-50', fg: 'text-red-600' },
             ].map(({ icon: Icon, label, bg, fg }) => (
               <div
                 key={label}

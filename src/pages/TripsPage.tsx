@@ -40,7 +40,7 @@ export function TripsPage() {
             <EmptyState
               icon={<Map className="h-10 w-10" />}
               title="Aucun trajet"
-              description="Commencez par créer votre premier trajet pour organiser votre voyage au Japon."
+              description="Commencez par créer votre premier trajet pour organiser vos voyages."
               action={
                 <Link to="/trips/new" className="btn-primary">
                   <Plus className="h-4 w-4" />

@@ -39,7 +39,7 @@ const transportMap: Record<TransportType, TransportMeta> = {
     textColor: 'text-yellow-700',
   },
   shinkansen: {
-    label: 'Shinkansen',
+    label: 'Train express',
     color: '#dc2626',
     bgColor: 'bg-red-50',
     textColor: 'text-red-700',
@@ -139,7 +139,7 @@ const stepTypeConfig: Record<TransportType, StepTypeConfig> = {
     toLabel: 'Arrivée',
     fromPlaceholder: 'Gare de départ',
     toPlaceholder: 'Gare d’arrivée',
-    titlePlaceholder: 'Shinkansen vers...',
+    titlePlaceholder: 'Train express vers...',
     showLinePlatform: true,
   },
   wait: {

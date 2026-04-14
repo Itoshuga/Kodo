@@ -100,7 +100,7 @@ export function CreateTripPage() {
                   autoFocus
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Tokyo vers Kyoto"
+                  placeholder="Ville A vers Ville B"
                   className="input-floating text-xl"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && canContinue) {
