@@ -104,7 +104,7 @@ export function EditStepPage() {
     } catch (error) {
       const message = error instanceof Error
         ? error.message
-        : "Impossible d'enregistrer cette etape pour le moment.";
+        : "Impossible d'enregistrer cette étape pour le moment.";
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
@@ -120,7 +120,7 @@ export function EditStepPage() {
     } catch (error) {
       const message = error instanceof Error
         ? error.message
-        : "Impossible de supprimer cette etape pour le moment.";
+        : "Impossible de supprimer cette étape pour le moment.";
       setSubmitError(message);
     } finally {
       setIsDeleting(false);

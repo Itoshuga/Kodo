@@ -187,7 +187,7 @@ export function ProfilePage() {
               <p className="mt-1 text-2xl font-bold text-stone-800">{placeCount}</p>
             </div>
             <div className="rounded-2xl border border-stone-200/80 bg-white px-4 py-3 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Temps planifie</p>
+              <p className="text-xs font-semibold uppercase tracking-wider text-stone-400">Temps planifié</p>
               <p className="mt-1 text-2xl font-bold text-stone-800">{totalMinutes > 0 ? formatDuration(totalMinutes) : '0 min'}</p>
             </div>
           </section>
@@ -196,7 +196,7 @@ export function ProfilePage() {
             <div className="rounded-3xl border border-stone-200/80 bg-white p-5 shadow-sm">
               <h3 className="text-base font-semibold text-stone-800">Ambiance de trajet</h3>
               {topTransports.length === 0 ? (
-                <p className="mt-2 text-sm text-stone-500">Ajoutez des étapes pour faire apparaitre vos modes de transport préférés.</p>
+                <p className="mt-2 text-sm text-stone-500">Ajoutez des étapes pour faire apparaître vos modes de transport préférés.</p>
               ) : (
                 <div className="mt-3 space-y-2">
                   {topTransports.map(({ type, count, meta }) => (
@@ -269,7 +269,7 @@ export function ProfilePage() {
                   className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm font-semibold text-stone-700 transition-colors hover:bg-stone-50"
                 >
                   <LogOut className="h-4 w-4" />
-                  Se deconnecter
+                  Se déconnecter
                 </button>
               </div>
             </div>
@@ -279,4 +279,3 @@ export function ProfilePage() {
     </PageLayout>
   );
 }
-

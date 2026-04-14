@@ -23,9 +23,9 @@ function getSyncErrorMessage(error: unknown): string {
     case 'unauthenticated':
       return 'Connexion requise pour synchroniser vos modifications.';
     case 'unavailable':
-      return 'Service temporairement indisponible. Reessayez dans quelques instants.';
+      return 'Service temporairement indisponible. Réessayez dans quelques instants.';
     case 'deadline-exceeded':
-      return 'La synchronisation a pris trop de temps. Reessayez.';
+      return 'La synchronisation a pris trop de temps. Réessayez.';
     default:
       break;
   }
@@ -34,16 +34,16 @@ function getSyncErrorMessage(error: unknown): string {
   const normalized = raw.toLowerCase();
 
   if (normalized.includes('unsupported field value')) {
-    return 'Certaines donnees du trajet sont invalides. Verifiez les champs puis reessayez.';
+    return 'Certaines données du trajet sont invalides. Vérifiez les champs puis réessayez.';
   }
   if (normalized.includes('missing or insufficient permissions')) {
     return 'Permissions insuffisantes pour synchroniser vos modifications.';
   }
   if (normalized.includes('offline')) {
-    return 'Vous etes hors ligne. Les modifications locales ont ete restaurees.';
+    return 'Vous êtes hors ligne. Les modifications locales ont été restaurées.';
   }
 
-  return 'Echec de synchronisation. Vos modifications locales ont ete restaurees.';
+  return 'Échec de synchronisation. Vos modifications locales ont été restaurées.';
 }
 
 interface TripsState {
@@ -115,7 +115,7 @@ export const useTripsStore = create<TripsState>((set, get) => {
     set({
       pendingWrites: 0,
       syncStatus: 'error',
-      syncMessage: 'Echec de synchronisation',
+      syncMessage: 'Échec de synchronisation',
       syncError: errorMessage,
     });
   };
@@ -209,7 +209,7 @@ export const useTripsStore = create<TripsState>((set, get) => {
     async addTrip(trip: Trip) {
       const uid = resolveUid();
       if (!uid) {
-        const message = 'Connexion requise pour creer un trajet.';
+        const message = 'Connexion requise pour créer un trajet.';
         finishSyncError(message);
         throw new Error(message);
       }
@@ -223,7 +223,7 @@ export const useTripsStore = create<TripsState>((set, get) => {
         previousTrips,
         nextTrips,
         () => saveTrip(uid, withOwner),
-        'Trajet sauvegarde'
+        'Trajet sauvegardé'
       );
     },
 
@@ -244,7 +244,7 @@ export const useTripsStore = create<TripsState>((set, get) => {
         previousTrips,
         nextTrips,
         () => saveTrip(uid, updated),
-        'Trajet mis a jour'
+        'Trajet mis à jour'
       );
     },
 
@@ -264,14 +264,14 @@ export const useTripsStore = create<TripsState>((set, get) => {
         previousTrips,
         nextTrips,
         () => removeTrip(uid, id),
-        'Trajet supprime'
+        'Trajet supprimé'
       );
     },
 
     async addStep(tripId: string, step: TripStep) {
       const uid = resolveUid();
       if (!uid) {
-        const message = 'Connexion requise pour ajouter une etape.';
+        const message = 'Connexion requise pour ajouter une étape.';
         finishSyncError(message);
         throw new Error(message);
       }
@@ -293,14 +293,14 @@ export const useTripsStore = create<TripsState>((set, get) => {
         previousTrips,
         nextTrips,
         () => saveTrip(uid, updated),
-        'Etape ajoutee'
+        'Étape ajoutée'
       );
     },
 
     async updateStep(tripId: string, step: TripStep) {
       const uid = resolveUid();
       if (!uid) {
-        const message = 'Connexion requise pour modifier une etape.';
+        const message = 'Connexion requise pour modifier une étape.';
         finishSyncError(message);
         throw new Error(message);
       }
@@ -322,14 +322,14 @@ export const useTripsStore = create<TripsState>((set, get) => {
         previousTrips,
         nextTrips,
         () => saveTrip(uid, updated),
-        'Etape modifiee'
+        'Étape modifiée'
       );
     },
 
     async deleteStep(tripId: string, stepId: string) {
       const uid = resolveUid();
       if (!uid) {
-        const message = 'Connexion requise pour supprimer une etape.';
+        const message = 'Connexion requise pour supprimer une étape.';
         finishSyncError(message);
         throw new Error(message);
       }
@@ -354,14 +354,14 @@ export const useTripsStore = create<TripsState>((set, get) => {
         previousTrips,
         nextTrips,
         () => saveTrip(uid, updated),
-        'Etape supprimee'
+        'Étape supprimée'
       );
     },
 
     async reorderSteps(tripId: string, steps: TripStep[]) {
       const uid = resolveUid();
       if (!uid) {
-        const message = 'Connexion requise pour reordonner les etapes.';
+        const message = 'Connexion requise pour réordonner les étapes.';
         finishSyncError(message);
         throw new Error(message);
       }
@@ -383,7 +383,7 @@ export const useTripsStore = create<TripsState>((set, get) => {
         previousTrips,
         nextTrips,
         () => saveTrip(uid, updated),
-        'Ordre des etapes enregistre'
+        'Ordre des étapes enregistré'
       );
     },
   };

@@ -34,17 +34,17 @@ export function TripSyncToast() {
 
   const title =
     syncStatus === 'error'
-      ? 'Echec de synchronisation'
+      ? 'Échec de synchronisation'
       : syncStatus === 'saved'
-        ? 'Sauvegarde reussie'
+        ? 'Sauvegarde réussie'
         : syncMessage || 'Synchronisation en cours...';
 
   const description =
     syncStatus === 'error'
       ? syncError || 'Une erreur est survenue pendant la synchronisation.'
       : syncStatus === 'saved'
-        ? syncMessage || 'Vos modifications sont enregistrees.'
-        : 'Vos modifications sont envoyees vers votre compte.';
+        ? syncMessage || 'Vos modifications sont enregistrées.'
+        : 'Vos modifications sont envoyées vers votre compte.';
 
   return (
     <div className="pointer-events-none fixed inset-x-4 top-20 z-[79] flex justify-center lg:inset-x-auto lg:right-6 lg:top-24">
@@ -82,4 +82,3 @@ export function TripSyncToast() {
     </div>
   );
 }
-

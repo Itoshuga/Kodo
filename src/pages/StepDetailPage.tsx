@@ -87,7 +87,7 @@ export function StepDetailPage() {
     } catch (error) {
       const message = error instanceof Error
         ? error.message
-        : "Impossible de supprimer cette etape pour le moment.";
+        : "Impossible de supprimer cette étape pour le moment.";
       setDeleteError(message);
       setShowDeleteModal(false);
     }

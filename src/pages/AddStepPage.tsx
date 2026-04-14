@@ -103,7 +103,7 @@ export function AddStepPage() {
     } catch (error) {
       const message = error instanceof Error
         ? error.message
-        : "Impossible d'enregistrer cette etape pour le moment.";
+        : "Impossible d'enregistrer cette étape pour le moment.";
       setSubmitError(message);
     } finally {
       setIsSubmitting(false);
@@ -421,7 +421,7 @@ export function AddStepPage() {
                   disabled={isSubmitting}
                   className="btn-primary form-nav-primary-btn flex-1"
                 >
-                  {isSubmitting ? 'Enregistrement...' : "Ajouter l'etape"}
+                  {isSubmitting ? 'Enregistrement...' : 'Ajouter l’étape'}
                 </button>
               </div>
               {submitError && (

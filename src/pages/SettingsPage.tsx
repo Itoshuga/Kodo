@@ -52,7 +52,7 @@ export function SettingsPage() {
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold tracking-tight text-stone-800">Paramètres</h1>
-              <p className="mt-1 text-sm text-stone-500">Personnalisez votre ambiance profil et votre identite voyage.</p>
+              <p className="mt-1 text-sm text-stone-500">Personnalisez votre ambiance profil et votre identité voyage.</p>
             </div>
             <Link
               to="/profile"
@@ -104,7 +104,7 @@ export function SettingsPage() {
               <h3 className="text-base font-semibold text-stone-800">Customisation profil</h3>
               {saved && (
                 <span className="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-                  Sauvegarde
+                  Sauvegardé
                 </span>
               )}
             </div>
@@ -143,7 +143,7 @@ export function SettingsPage() {
                   value={prefs.bio}
                   onChange={(e) => updatePref('bio', e.target.value)}
                   className="w-full resize-none rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800 transition-colors focus:border-teal-600 focus:outline-none"
-                  placeholder="Parlez de votre facon de voyager..."
+                  placeholder="Parlez de votre façon de voyager..."
                 />
               </div>
 
@@ -185,7 +185,7 @@ export function SettingsPage() {
                   onClick={handleReset}
                   className="btn-ghost rounded-xl border border-stone-200 bg-white"
                 >
-                  Reinitialiser
+                  Réinitialiser
                 </button>
               </div>
             </div>

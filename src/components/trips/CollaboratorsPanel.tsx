@@ -218,12 +218,12 @@ export function CollaboratorsPanel({
                             {c.role === 'owner' ? (
                               <span className="flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600">
                                 <Crown className="h-2.5 w-2.5" />
-                                Proprietaire
+                                Propriétaire
                               </span>
                             ) : (
                               <span className="flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-teal-600">
                                 <Pencil className="h-2.5 w-2.5" />
-                                Editeur
+                                Éditeur
                               </span>
                             )}
                           </div>

@@ -230,7 +230,7 @@ export function EditTripPage() {
                     rows={3}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Premier jour, départ tot le matin..."
+                    placeholder="Premier jour, départ tôt le matin..."
                     className="w-full resize-none rounded-2xl border-2 border-stone-200 bg-stone-50/50 px-4 py-3 text-base font-medium text-stone-800 placeholder:text-stone-300 transition-colors focus:border-teal-600 focus:bg-white focus:outline-none"
                   />
                 </div>
