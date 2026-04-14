@@ -20,6 +20,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { useTripsStore } from '../store/tripsStore';
 import { formatDuration } from '../utils/transport';
 import { formatTripDateRange, getTripDayOptions } from '../utils/tripSchedule';
+import type { TripStep } from '../types/trip';
 
 const defaultCover = 'https://images.pexels.com/photos/1440476/pexels-photo-1440476.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop';
 
@@ -28,10 +29,13 @@ export function TripDetailPage() {
   const navigate = useNavigate();
   const trips = useTripsStore((s) => s.trips);
   const deleteTrip = useTripsStore((s) => s.deleteTrip);
+  const reorderSteps = useTripsStore((s) => s.reorderSteps);
   const loadTrips = useTripsStore((s) => s.loadTrips);
   const trip = trips.find((t) => t.id === id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteError, setDeleteError] = useState('');
+  const [reorderError, setReorderError] = useState('');
+  const [isReordering, setIsReordering] = useState(false);
   const [selectedDayIndex, setSelectedDayIndex] = useState(0);
   const dayScrollerRef = useRef<HTMLDivElement | null>(null);
   const [canScrollDaysLeft, setCanScrollDaysLeft] = useState(false);
@@ -61,6 +65,10 @@ export function TripDetailPage() {
       window.removeEventListener('resize', onResize);
     };
   }, [trip, selectedDayIndex]);
+
+  useEffect(() => {
+    setReorderError('');
+  }, [selectedDayIndex, id]);
 
   if (!trip) {
     return (
@@ -143,6 +151,38 @@ export function TripDetailPage() {
         : "Impossible de supprimer ce trajet pour le moment.";
       setDeleteError(message);
       setShowDeleteModal(false);
+    }
+  }
+
+  async function handleReorderDaySteps(reorderedDaySteps: TripStep[]) {
+    if (!activeDay || reorderedDaySteps.length < 2) return;
+
+    setReorderError('');
+    setIsReordering(true);
+
+    try {
+      const currentDayIndex = activeDay.index;
+      const reorderedQueue = [...reorderedDaySteps];
+
+      const mergedOrdered = sortedSteps.map((step) => {
+        if ((step.dayIndex ?? 0) !== currentDayIndex) return step;
+        const next = reorderedQueue.shift();
+        return next || step;
+      });
+
+      const normalized = mergedOrdered.map((step, index) => ({
+        ...step,
+        order: index,
+      }));
+
+      await reorderSteps(tripId, normalized);
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible de réordonner les étapes pour le moment.";
+      setReorderError(message);
+    } finally {
+      setIsReordering(false);
     }
   }
 
@@ -342,13 +382,33 @@ export function TripDetailPage() {
                 {activeDay ? (
                   <section className="min-w-0 overflow-hidden rounded-2xl border border-stone-200/80 bg-white p-4 shadow-sm sm:p-5">
                     <h3 className="font-brand text-xl font-bold text-stone-800">{activeDay.label}</h3>
+                    {activeDay.steps.length > 1 && (
+                      <p className="mt-2 text-xs font-medium text-stone-500">
+                        Glissez la poignée d'une étape pour réordonner votre journée.
+                      </p>
+                    )}
+                    {reorderError && (
+                      <p className="mt-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
+                        {reorderError}
+                      </p>
+                    )}
+                    {isReordering && (
+                      <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-teal-700">
+                        Réorganisation en cours...
+                      </p>
+                    )}
                     {activeDay.steps.length === 0 ? (
                       <p className="mt-3 rounded-xl border border-dashed border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500">
                         Aucune étape prévue pour ce jour.
                       </p>
                     ) : (
                       <div className="mt-4 min-w-0">
-                        <StepTimeline steps={activeDay.steps} tripId={tripId} />
+                        <StepTimeline
+                          steps={activeDay.steps}
+                          tripId={tripId}
+                          onReorder={handleReorderDaySteps}
+                          isReordering={isReordering}
+                        />
                       </div>
                     )}
                   </section>

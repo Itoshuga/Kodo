@@ -82,7 +82,7 @@ export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
                 </h4>
               </div>
 
-              <div className="flex flex-shrink-0 items-center gap-2 pl-2">
+              <div className="flex flex-shrink-0 items-center gap-2 pl-2 pr-10">
                 {step.estimatedDuration && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-white/75 px-3 py-1.5 text-xs font-semibold text-stone-600 ring-1 ring-stone-200/70">
                     <Clock className="h-3.5 w-3.5 text-stone-500" />
