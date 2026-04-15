@@ -39,6 +39,8 @@ export function AuthPage() {
         setError('Adresse email invalide.');
       } else if (msg.includes('auth/user-not-found')) {
         setError('Aucun compte trouvé avec cet email.');
+      } else if (msg.includes('account/deactivated')) {
+        setError('Ce compte est désactivé. Contactez le support pour le réactiver.');
       } else {
         setError(msg);
       }

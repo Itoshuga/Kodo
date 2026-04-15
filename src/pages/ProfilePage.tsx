@@ -20,6 +20,7 @@ import {
   ACCENT_OPTIONS,
   DEFAULT_PROFILE_PREFERENCES,
   STYLE_LABELS,
+  hydrateProfilePreferences,
   loadProfilePreferences,
   type ProfilePreferences,
 } from '../utils/profilePreferences';
@@ -40,7 +41,20 @@ export function ProfilePage() {
   const [prefs, setPrefs] = useState<ProfilePreferences>(DEFAULT_PROFILE_PREFERENCES);
 
   useEffect(() => {
-    setPrefs(loadProfilePreferences(user?.uid));
+    const localPrefs = loadProfilePreferences(user?.uid);
+    setPrefs(localPrefs);
+
+    let cancelled = false;
+    (async () => {
+      if (!user?.uid) return;
+      const syncedPrefs = await hydrateProfilePreferences(user.uid);
+      if (cancelled) return;
+      setPrefs(syncedPrefs);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user?.uid]);
 
   const accent = useMemo(() => {

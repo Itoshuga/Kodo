@@ -16,7 +16,7 @@ import {
 import { useInvitesStore } from './store/invitesStore';
 import { useTripsStore } from './store/tripsStore';
 import { Loader2 } from 'lucide-react';
-import { applyAppTheme, loadProfilePreferences } from './utils/profilePreferences';
+import { applyAppTheme, hydrateProfilePreferences, loadProfilePreferences } from './utils/profilePreferences';
 
 function AuthenticatedApp() {
   const { user } = useAuth();
@@ -96,8 +96,21 @@ function AppShell() {
   const { user, loading } = useAuth();
 
   useEffect(() => {
-    const prefs = loadProfilePreferences(user?.uid);
-    applyAppTheme(prefs.accent);
+    const localPrefs = loadProfilePreferences(user?.uid);
+    applyAppTheme(localPrefs.accent);
+
+    let cancelled = false;
+
+    (async () => {
+      if (!user?.uid) return;
+      const syncedPrefs = await hydrateProfilePreferences(user.uid);
+      if (cancelled) return;
+      applyAppTheme(syncedPrefs.accent);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user?.uid]);
 
   if (loading) {
