@@ -9,8 +9,11 @@ import {
   Pencil,
   Route,
   Calendar,
+  History,
+  RotateCcw,
   ChevronLeft,
   ChevronRight,
+  X,
 } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { StepTimeline } from '../components/trips/StepTimeline';
@@ -20,9 +23,43 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { useTripsStore } from '../store/tripsStore';
 import { formatDuration } from '../utils/transport';
 import { formatTripDateRange, getTripDayOptions } from '../utils/tripSchedule';
-import type { TripStep } from '../types/trip';
+import type { TripActivityEntry, TripStep } from '../types/trip';
 
 const defaultCover = 'https://images.pexels.com/photos/1440476/pexels-photo-1440476.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop';
+
+function formatActivityDate(date: string): string {
+  const parsed = new Date(date);
+  if (Number.isNaN(parsed.getTime())) return 'Date inconnue';
+  return parsed.toLocaleString('fr-FR', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
+}
+
+function getActivityLabel(entry: TripActivityEntry): string {
+  const actor = entry.actorName?.trim() || 'Quelqu’un';
+
+  switch (entry.action) {
+    case 'trip_created':
+      return `${actor} a créé ce trajet`;
+    case 'trip_updated':
+      return `${actor} a modifié les informations du trajet`;
+    case 'trip_restored':
+      return `${actor} a annulé la suppression du trajet`;
+    case 'step_added':
+      return `${actor} a ajouté l’étape "${entry.stepTitle || 'Sans titre'}"`;
+    case 'step_updated':
+      return `${actor} a modifié l’étape "${entry.stepTitle || 'Sans titre'}"`;
+    case 'step_deleted':
+      return `${actor} a supprimé l’étape "${entry.stepTitle || 'Sans titre'}"`;
+    case 'step_restored':
+      return `${actor} a restauré l’étape "${entry.stepTitle || 'Sans titre'}"`;
+    case 'steps_reordered':
+      return `${actor} a réorganisé l’ordre des étapes`;
+    default:
+      return `${actor} a effectué une action`;
+  }
+}
 
 export function TripDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -30,9 +67,14 @@ export function TripDetailPage() {
   const trips = useTripsStore((s) => s.trips);
   const deleteTrip = useTripsStore((s) => s.deleteTrip);
   const reorderSteps = useTripsStore((s) => s.reorderSteps);
+  const pendingUndo = useTripsStore((s) => s.pendingUndo);
+  const undoInProgress = useTripsStore((s) => s.undoInProgress);
+  const undoLastDeletion = useTripsStore((s) => s.undoLastDeletion);
   const loadTrips = useTripsStore((s) => s.loadTrips);
   const trip = trips.find((t) => t.id === id);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showActivityModal, setShowActivityModal] = useState(false);
+  const [activityActionError, setActivityActionError] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [reorderError, setReorderError] = useState('');
   const [isReordering, setIsReordering] = useState(false);
@@ -69,6 +111,24 @@ export function TripDetailPage() {
   useEffect(() => {
     setReorderError('');
   }, [selectedDayIndex, id]);
+
+  useEffect(() => {
+    if (!showActivityModal) return undefined;
+
+    document.body.style.overflow = 'hidden';
+
+    function onKey(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setShowActivityModal(false);
+      }
+    }
+
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [showActivityModal]);
 
   if (!trip) {
     return (
@@ -113,6 +173,9 @@ export function TripDetailPage() {
   }
 
   const sortedSteps = [...trip.steps].sort((a, b) => a.order - b.order);
+  const activityEntries = [...(trip.activityLog || [])]
+    .sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''))
+    .slice(0, 5);
   const itineraryByDay = allDayOptions.map((day) => ({
     ...day,
     steps: sortedSteps.filter((s) => (s.dayIndex ?? 0) === day.index),
@@ -186,6 +249,19 @@ export function TripDetailPage() {
     }
   }
 
+  async function handleUndoFromActivity() {
+    setActivityActionError('');
+
+    try {
+      await undoLastDeletion();
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : "Impossible d'annuler la suppression pour le moment.";
+      setActivityActionError(message);
+    }
+  }
+
   return (
     <PageLayout>
       <div className="flex min-h-screen flex-col lg:ml-72">
@@ -215,6 +291,17 @@ export function TripDetailPage() {
                   triggerClassName="relative flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
                   badgeClassName="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-[10px] font-bold text-white ring-2 ring-[#15243a]"
                 />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActivityActionError('');
+                    setShowActivityModal(true);
+                  }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
+                  aria-label="Voir l'historique d'activité"
+                >
+                  <History className="h-4 w-4" />
+                </button>
                 <Link
                   to={`/trips/${tripId}/edit`}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
@@ -428,6 +515,80 @@ export function TripDetailPage() {
           </div>
         </div>
       </div>
+
+      {showActivityModal && (
+        <div
+          className="fixed inset-0 z-[90] flex items-end justify-center bg-black/45 backdrop-blur-sm sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              setShowActivityModal(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-lg animate-slide-up rounded-t-3xl bg-white px-5 pb-6 pt-5 shadow-2xl sm:rounded-3xl">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-stone-100 text-stone-600">
+                  <History className="h-4 w-4" />
+                </span>
+                <div>
+                  <h2 className="text-base font-semibold text-stone-800">Historique d’activité</h2>
+                  <p className="text-xs text-stone-500">5 dernières modifications</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowActivityModal(false)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-stone-400 transition-colors hover:bg-stone-100 hover:text-stone-600"
+                aria-label="Fermer l'historique"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {activityEntries.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-stone-200 bg-stone-50 px-3 py-2 text-sm text-stone-500">
+                Aucune activité enregistrée pour le moment.
+              </p>
+            ) : (
+              <ul className="max-h-[50vh] space-y-2 overflow-y-auto pr-1">
+                {activityEntries.map((entry) => (
+                  <li
+                    key={entry.id}
+                    className="rounded-xl border border-stone-200/80 bg-stone-50/70 px-3 py-2.5"
+                  >
+                    <p className="text-sm font-medium text-stone-700">{getActivityLabel(entry)}</p>
+                    <p className="mt-0.5 text-xs text-stone-500">{formatActivityDate(entry.createdAt)}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {activityActionError && (
+              <p className="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-medium text-rose-700">
+                {activityActionError}
+              </p>
+            )}
+
+            <div className="mt-4 flex items-center justify-between gap-3">
+              <p className="text-xs text-stone-500">
+                {pendingUndo ? pendingUndo.message : 'Aucune suppression à annuler.'}
+              </p>
+              <button
+                type="button"
+                onClick={handleUndoFromActivity}
+                disabled={!pendingUndo || undoInProgress}
+                className="inline-flex items-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-teal-700 transition-colors hover:border-teal-300 hover:bg-teal-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                <RotateCcw className="h-4 w-4" />
+                {undoInProgress ? 'Annulation...' : 'Undo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ConfirmModal
         open={showDeleteModal}

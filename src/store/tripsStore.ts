@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Trip, TripStep } from '../types/trip';
+import type { Trip, TripActivityAction, TripActivityEntry, TripStep } from '../types/trip';
 import {
   fetchTrips,
   saveTrip,
@@ -9,8 +9,34 @@ import {
 } from '../services/firestoreTrips';
 import { auth } from '../services/firebase';
 import { getCachedUser } from '../services/authService';
+import { generateId } from '../utils/ids';
 
 export type TripsSyncStatus = 'idle' | 'syncing' | 'saved' | 'error';
+
+const ACTIVITY_LOG_LIMIT = 80;
+const UNDO_WINDOW_MS = 10000;
+
+interface UndoTripDeletion {
+  kind: 'trip';
+  trip: Trip;
+  message: string;
+  expiresAt: number;
+}
+
+interface UndoStepDeletion {
+  kind: 'step';
+  tripBeforeDelete: Trip;
+  tripId: string;
+  stepId: string;
+  stepTitle: string;
+  message: string;
+  expiresAt: number;
+}
+
+export type PendingUndoDeletion = UndoTripDeletion | UndoStepDeletion;
+type PendingUndoPayload =
+  | Omit<UndoTripDeletion, 'expiresAt'>
+  | Omit<UndoStepDeletion, 'expiresAt'>;
 
 function getSyncErrorMessage(error: unknown): string {
   const code = typeof error === 'object' && error && 'code' in error
@@ -54,8 +80,12 @@ interface TripsState {
   syncMessage: string | null;
   syncError: string | null;
   pendingWrites: number;
+  pendingUndo: PendingUndoDeletion | null;
+  undoInProgress: boolean;
   setUid: (uid: string | null) => void;
   dismissSyncStatus: () => void;
+  dismissUndo: () => void;
+  undoLastDeletion: () => Promise<void>;
   loadTrips: () => Promise<void>;
   addTrip: (trip: Trip) => Promise<void>;
   updateTrip: (trip: Trip) => Promise<void>;
@@ -85,6 +115,61 @@ export const useTripsStore = create<TripsState>((set, get) => {
     }
 
     return null;
+  };
+
+  const resolveActor = () => {
+    const cached = getCachedUser();
+    const actorUid = auth.currentUser?.uid ?? cached?.uid ?? undefined;
+    const actorName =
+      auth.currentUser?.displayName?.trim() ||
+      cached?.username?.trim() ||
+      cached?.email?.trim() ||
+      undefined;
+
+    return { actorUid, actorName };
+  };
+
+  const createActivity = (
+    action: TripActivityAction,
+    options?: { stepId?: string; stepTitle?: string }
+  ): TripActivityEntry => {
+    const { actorUid, actorName } = resolveActor();
+
+    return {
+      id: generateId(),
+      action,
+      createdAt: new Date().toISOString(),
+      actorUid,
+      actorName,
+      stepId: options?.stepId,
+      stepTitle: options?.stepTitle,
+    };
+  };
+
+  const appendActivity = (trip: Trip, entry: TripActivityEntry): Trip => {
+    const current = Array.isArray(trip.activityLog) ? trip.activityLog : [];
+    const nextLog = [...current, entry];
+
+    if (nextLog.length > ACTIVITY_LOG_LIMIT) {
+      nextLog.splice(0, nextLog.length - ACTIVITY_LOG_LIMIT);
+    }
+
+    return {
+      ...trip,
+      activityLog: nextLog,
+    };
+  };
+
+  const queueUndo = (payload: PendingUndoPayload) => {
+    const expiresAt = Date.now() + UNDO_WINDOW_MS;
+    const pendingUndo: PendingUndoDeletion =
+      payload.kind === 'trip'
+        ? { ...payload, expiresAt }
+        : { ...payload, expiresAt };
+
+    set({
+      pendingUndo,
+    });
   };
 
   const startSync = () => {
@@ -154,6 +239,8 @@ export const useTripsStore = create<TripsState>((set, get) => {
     syncMessage: null,
     syncError: null,
     pendingWrites: 0,
+    pendingUndo: null,
+    undoInProgress: false,
 
     setUid(uid: string | null) {
       set({ uid });
@@ -170,6 +257,92 @@ export const useTripsStore = create<TripsState>((set, get) => {
       });
     },
 
+    dismissUndo() {
+      set({ pendingUndo: null, undoInProgress: false });
+    },
+
+    async undoLastDeletion() {
+      const pendingUndo = get().pendingUndo;
+      if (!pendingUndo || get().undoInProgress) return;
+
+      if (Date.now() > pendingUndo.expiresAt) {
+        set({ pendingUndo: null, undoInProgress: false });
+        return;
+      }
+
+      const uid = resolveUid();
+      if (!uid) {
+        const message = 'Connexion requise pour annuler la suppression.';
+        finishSyncError(message);
+        throw new Error(message);
+      }
+
+      set({ undoInProgress: true });
+
+      try {
+        if (pendingUndo.kind === 'trip') {
+          const restoredBase: Trip = {
+            ...pendingUndo.trip,
+            updatedAt: new Date().toISOString(),
+          };
+          const restoredTrip = appendActivity(
+            restoredBase,
+            createActivity('trip_restored')
+          );
+
+          const previousTrips = get().trips;
+          const nextTrips = [
+            restoredTrip,
+            ...previousTrips.filter((trip) => trip.id !== restoredTrip.id),
+          ];
+
+          await runOptimisticMutation(
+            'undoDeleteTrip',
+            previousTrips,
+            nextTrips,
+            () => saveTrip(uid, restoredTrip),
+            'Suppression annulée'
+          );
+
+          set({ pendingUndo: null });
+          return;
+        }
+
+        const restoredStep = pendingUndo.tripBeforeDelete.steps.find(
+          (step) => step.id === pendingUndo.stepId
+        );
+        const restoredBase: Trip = {
+          ...pendingUndo.tripBeforeDelete,
+          updatedAt: new Date().toISOString(),
+        };
+        const restoredTrip = appendActivity(
+          restoredBase,
+          createActivity('step_restored', {
+            stepId: pendingUndo.stepId,
+            stepTitle: restoredStep?.title || pendingUndo.stepTitle,
+          })
+        );
+
+        const previousTrips = get().trips;
+        const hasTrip = previousTrips.some((trip) => trip.id === pendingUndo.tripId);
+        const nextTrips = hasTrip
+          ? previousTrips.map((trip) => (trip.id === pendingUndo.tripId ? restoredTrip : trip))
+          : [restoredTrip, ...previousTrips];
+
+        await runOptimisticMutation(
+          'undoDeleteStep',
+          previousTrips,
+          nextTrips,
+          () => saveTrip(uid, restoredTrip),
+          'Suppression annulée'
+        );
+
+        set({ pendingUndo: null });
+      } finally {
+        set({ undoInProgress: false });
+      }
+    },
+
     clear() {
       set({
         trips: [],
@@ -179,6 +352,8 @@ export const useTripsStore = create<TripsState>((set, get) => {
         syncMessage: null,
         syncError: null,
         pendingWrites: 0,
+        pendingUndo: null,
+        undoInProgress: false,
       });
     },
 
@@ -215,7 +390,14 @@ export const useTripsStore = create<TripsState>((set, get) => {
       }
 
       const previousTrips = get().trips;
-      const withOwner = { ...trip, ownerUid: uid, collaboratorUids: [] };
+      const withOwner = appendActivity(
+        {
+          ...trip,
+          ownerUid: uid,
+          collaboratorUids: [],
+        },
+        createActivity('trip_created')
+      );
       const nextTrips = [withOwner, ...previousTrips];
 
       await runOptimisticMutation(
@@ -236,7 +418,10 @@ export const useTripsStore = create<TripsState>((set, get) => {
       }
 
       const previousTrips = get().trips;
-      const updated = { ...trip, updatedAt: new Date().toISOString() };
+      const updated = appendActivity(
+        { ...trip, updatedAt: new Date().toISOString() },
+        createActivity('trip_updated')
+      );
       const nextTrips = previousTrips.map((t) => (t.id === updated.id ? updated : t));
 
       await runOptimisticMutation(
@@ -257,7 +442,11 @@ export const useTripsStore = create<TripsState>((set, get) => {
       }
 
       const previousTrips = get().trips;
-      const nextTrips = previousTrips.filter((t) => t.id !== id);
+      const deletedTrip = previousTrips.find((trip) => trip.id === id);
+      if (!deletedTrip) {
+        throw new Error('Trajet introuvable.');
+      }
+      const nextTrips = previousTrips.filter((trip) => trip.id !== id);
 
       await runOptimisticMutation(
         'deleteTrip',
@@ -266,6 +455,12 @@ export const useTripsStore = create<TripsState>((set, get) => {
         () => removeTrip(uid, id),
         'Trajet supprimé'
       );
+
+      queueUndo({
+        kind: 'trip',
+        trip: deletedTrip,
+        message: `Trajet "${deletedTrip.title}" supprimé.`,
+      });
     },
 
     async addStep(tripId: string, step: TripStep) {
@@ -281,11 +476,17 @@ export const useTripsStore = create<TripsState>((set, get) => {
       if (!trip) {
         throw new Error('Trajet introuvable.');
       }
-      const updated = {
-        ...trip,
-        steps: [...trip.steps, step],
-        updatedAt: new Date().toISOString(),
-      };
+      const updated = appendActivity(
+        {
+          ...trip,
+          steps: [...trip.steps, step],
+          updatedAt: new Date().toISOString(),
+        },
+        createActivity('step_added', {
+          stepId: step.id,
+          stepTitle: step.title,
+        })
+      );
       const nextTrips = previousTrips.map((t) => (t.id === tripId ? updated : t));
 
       await runOptimisticMutation(
@@ -310,11 +511,17 @@ export const useTripsStore = create<TripsState>((set, get) => {
       if (!trip) {
         throw new Error('Trajet introuvable.');
       }
-      const updated = {
-        ...trip,
-        steps: trip.steps.map((s) => (s.id === step.id ? step : s)),
-        updatedAt: new Date().toISOString(),
-      };
+      const updated = appendActivity(
+        {
+          ...trip,
+          steps: trip.steps.map((s) => (s.id === step.id ? step : s)),
+          updatedAt: new Date().toISOString(),
+        },
+        createActivity('step_updated', {
+          stepId: step.id,
+          stepTitle: step.title,
+        })
+      );
       const nextTrips = previousTrips.map((t) => (t.id === tripId ? updated : t));
 
       await runOptimisticMutation(
@@ -339,14 +546,21 @@ export const useTripsStore = create<TripsState>((set, get) => {
       if (!trip) {
         throw new Error('Trajet introuvable.');
       }
+      const deletedStep = trip.steps.find((step) => step.id === stepId);
       const steps = trip.steps
         .filter((s) => s.id !== stepId)
         .map((s, i) => ({ ...s, order: i }));
-      const updated = {
-        ...trip,
-        steps,
-        updatedAt: new Date().toISOString(),
-      };
+      const updated = appendActivity(
+        {
+          ...trip,
+          steps,
+          updatedAt: new Date().toISOString(),
+        },
+        createActivity('step_deleted', {
+          stepId,
+          stepTitle: deletedStep?.title || `Étape ${deletedStep?.order ?? ''}`.trim(),
+        })
+      );
       const nextTrips = previousTrips.map((t) => (t.id === tripId ? updated : t));
 
       await runOptimisticMutation(
@@ -356,6 +570,15 @@ export const useTripsStore = create<TripsState>((set, get) => {
         () => saveTrip(uid, updated),
         'Étape supprimée'
       );
+
+      queueUndo({
+        kind: 'step',
+        tripBeforeDelete: trip,
+        tripId,
+        stepId,
+        stepTitle: deletedStep?.title || 'Étape',
+        message: `Étape "${deletedStep?.title || 'Sans titre'}" supprimée.`,
+      });
     },
 
     async reorderSteps(tripId: string, steps: TripStep[]) {
@@ -371,11 +594,14 @@ export const useTripsStore = create<TripsState>((set, get) => {
       if (!trip) {
         throw new Error('Trajet introuvable.');
       }
-      const updated = {
-        ...trip,
-        steps,
-        updatedAt: new Date().toISOString(),
-      };
+      const updated = appendActivity(
+        {
+          ...trip,
+          steps,
+          updatedAt: new Date().toISOString(),
+        },
+        createActivity('steps_reordered')
+      );
       const nextTrips = previousTrips.map((t) => (t.id === tripId ? updated : t));
 
       await runOptimisticMutation(

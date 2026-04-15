@@ -10,6 +10,26 @@ export type TransportType =
   | 'visit'
   | 'other';
 
+export type TripActivityAction =
+  | 'trip_created'
+  | 'trip_updated'
+  | 'trip_restored'
+  | 'step_added'
+  | 'step_updated'
+  | 'step_deleted'
+  | 'step_restored'
+  | 'steps_reordered';
+
+export interface TripActivityEntry {
+  id: string;
+  action: TripActivityAction;
+  createdAt: string;
+  actorUid?: string;
+  actorName?: string;
+  stepId?: string;
+  stepTitle?: string;
+}
+
 export interface TripStep {
   id: string;
   order: number;
@@ -40,4 +60,5 @@ export interface Trip {
   updatedAt: string;
   ownerUid?: string;
   collaboratorUids?: string[];
+  activityLog?: TripActivityEntry[];
 }
