@@ -7,6 +7,7 @@ import {
   ACCENT_OPTIONS,
   DEFAULT_PROFILE_PREFERENCES,
   STYLE_LABELS,
+  applyAppTheme,
   loadProfilePreferences,
   saveProfilePreferences,
   type ProfilePreferences,
@@ -37,6 +38,7 @@ export function SettingsPage() {
 
   function handleSave() {
     saveProfilePreferences(user?.uid, prefs);
+    applyAppTheme(prefs.accent);
     setSaved(true);
   }
 

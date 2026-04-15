@@ -1,5 +1,6 @@
-﻿export type AccentKey = 'sunset' | 'ocean' | 'forest' | 'midnight';
+export type AccentKey = 'sunset' | 'ocean' | 'forest' | 'midnight';
 export type TravelStyle = 'slow' | 'food' | 'culture' | 'photo';
+export type AppThemeClass = 'theme-sunset' | 'theme-ocean' | 'theme-garden' | 'theme-midnight';
 
 export interface ProfilePreferences {
   city: string;
@@ -48,9 +49,9 @@ export const ACCENT_OPTIONS: AccentOption[] = [
   {
     key: 'midnight',
     label: 'Night Rail',
-    coverClass: 'from-slate-700 via-slate-800 to-slate-900',
-    chipClass: 'bg-slate-100/95 text-slate-700',
-    ringClass: 'ring-slate-200',
+    coverClass: 'from-[#345f99] via-[#2a5186] to-[#1f3f6c]',
+    chipClass: 'bg-[#dce7f7] text-[#2f5f9d]',
+    ringClass: 'ring-[#b5c5da]',
   },
 ];
 
@@ -60,6 +61,57 @@ export const STYLE_LABELS: Record<TravelStyle, string> = {
   culture: 'Culture first',
   photo: 'Photo walk',
 };
+
+const THEME_CLASSES: readonly AppThemeClass[] = [
+  'theme-sunset',
+  'theme-ocean',
+  'theme-garden',
+  'theme-midnight',
+];
+
+const ACCENT_TO_THEME_CLASS: Record<AccentKey, AppThemeClass> = {
+  sunset: 'theme-sunset',
+  ocean: 'theme-ocean',
+  forest: 'theme-garden',
+  midnight: 'theme-midnight',
+};
+
+const THEME_META_COLORS: Record<AppThemeClass, string> = {
+  'theme-sunset': '#f7f1ea',
+  'theme-ocean': '#eef4f8',
+  'theme-garden': '#f1f7f2',
+  'theme-midnight': '#edf2f9',
+};
+
+function updateThemeMetaColor(color: string): void {
+  if (typeof document === 'undefined') return;
+
+  const tags = document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]');
+  tags.forEach((tag) => {
+    tag.content = color;
+  });
+}
+
+export function getThemeClassForAccent(accent: AccentKey): AppThemeClass {
+  return ACCENT_TO_THEME_CLASS[accent] ?? 'theme-garden';
+}
+
+export function applyAppTheme(accent: AccentKey | null | undefined): void {
+  if (typeof document === 'undefined') return;
+
+  const safeAccent = accent ?? DEFAULT_PROFILE_PREFERENCES.accent;
+  const themeClass = getThemeClassForAccent(safeAccent);
+  const root = document.documentElement;
+
+  THEME_CLASSES.forEach((className) => {
+    root.classList.remove(className);
+  });
+
+  root.classList.add(themeClass);
+  root.dataset.theme = safeAccent;
+
+  updateThemeMetaColor(THEME_META_COLORS[themeClass]);
+}
 
 export function getProfilePreferencesStorageKey(uid: string): string {
   return `kodo_profile_preferences_${uid}`;
@@ -101,3 +153,20 @@ export function saveProfilePreferences(uid: string | null | undefined, prefs: Pr
   localStorage.setItem(getProfilePreferencesStorageKey(uid), JSON.stringify(prefs));
 }
 
+function getCachedUserUid(): string | null {
+  try {
+    const raw = localStorage.getItem('kodo_user');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { uid?: unknown };
+    return typeof parsed?.uid === 'string' ? parsed.uid : null;
+  } catch {
+    return null;
+  }
+}
+
+export function applyStoredThemePreference(): void {
+  if (typeof window === 'undefined') return;
+  const uid = getCachedUserUid();
+  const prefs = loadProfilePreferences(uid);
+  applyAppTheme(prefs.accent);
+}

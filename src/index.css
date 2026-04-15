@@ -2,29 +2,118 @@
 @tailwind components;
 @tailwind utilities;
 
+:root,
+.theme-garden {
+  --app-bg: #f1f7f2;
+  --app-surface: #ffffff;
+  --app-surface-soft: #eef4ed;
+  --app-border: #d6e3d5;
+  --app-border-strong: #c2d3c1;
+  --app-text-strong: #1f2b22;
+  --app-text: #334239;
+  --app-text-muted: #5c6d62;
+  --app-text-subtle: #7a8a7f;
+  --app-text-faint: #9ca8a1;
+  --app-primary: #137b67;
+  --app-primary-hover: #0f6957;
+  --app-primary-active: #0d5a4c;
+  --app-primary-soft: #daf3ea;
+  --app-primary-shadow: rgb(19 123 103 / 0.3);
+  --app-focus-ring: rgb(19 123 103 / 0.2);
+  --app-hero-start: #137b67;
+  --app-hero-mid: #0f6957;
+  --app-hero-end: #0d5a4c;
+}
+
+.theme-sunset {
+  --app-bg: #f7f1ea;
+  --app-surface: #fffdfb;
+  --app-surface-soft: #f8eee4;
+  --app-border: #ecd9c8;
+  --app-border-strong: #ddc2aa;
+  --app-text-strong: #3a2517;
+  --app-text: #5a3926;
+  --app-text-muted: #7b5b46;
+  --app-text-subtle: #9f7d66;
+  --app-text-faint: #b59684;
+  --app-primary: #d26a2f;
+  --app-primary-hover: #b95b24;
+  --app-primary-active: #9a4919;
+  --app-primary-soft: #fbe6d8;
+  --app-primary-shadow: rgb(210 106 47 / 0.28);
+  --app-focus-ring: rgb(210 106 47 / 0.2);
+  --app-hero-start: #d26a2f;
+  --app-hero-mid: #b95b24;
+  --app-hero-end: #9a4919;
+}
+
+.theme-ocean {
+  --app-bg: #eef4f8;
+  --app-surface: #fdfefe;
+  --app-surface-soft: #e8f0f6;
+  --app-border: #cbdae5;
+  --app-border-strong: #b4c8d7;
+  --app-text-strong: #1b2e3a;
+  --app-text: #2f4857;
+  --app-text-muted: #567282;
+  --app-text-subtle: #7390a0;
+  --app-text-faint: #95aab8;
+  --app-primary: #1e6e95;
+  --app-primary-hover: #165f82;
+  --app-primary-active: #124d6a;
+  --app-primary-soft: #d9ebf5;
+  --app-primary-shadow: rgb(30 110 149 / 0.28);
+  --app-focus-ring: rgb(30 110 149 / 0.2);
+  --app-hero-start: #1e6e95;
+  --app-hero-mid: #165f82;
+  --app-hero-end: #124d6a;
+}
+
+.theme-midnight {
+  --app-bg: #edf2f9;
+  --app-surface: #ffffff;
+  --app-surface-soft: #e6edf7;
+  --app-border: #ccd8e8;
+  --app-border-strong: #b5c5da;
+  --app-text-strong: #1d2b3d;
+  --app-text: #30465f;
+  --app-text-muted: #536a84;
+  --app-text-subtle: #6f87a2;
+  --app-text-faint: #8ea2b8;
+  --app-primary: #2f5f9d;
+  --app-primary-hover: #274f85;
+  --app-primary-active: #1f3f6c;
+  --app-primary-soft: #dce7f7;
+  --app-primary-shadow: rgb(47 95 157 / 0.3);
+  --app-focus-ring: rgb(47 95 157 / 0.2);
+  --app-hero-start: #345f99;
+  --app-hero-mid: #2a5186;
+  --app-hero-end: #1f3f6c;
+}
+
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     scroll-behavior: smooth;
     overflow-x: hidden;
-    background-color: #fafaf9;
+    background-color: var(--app-bg);
   }
 
   body {
-    @apply bg-stone-50 text-stone-800;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
       'Helvetica Neue', Arial, sans-serif;
+    color: var(--app-text-strong);
     line-height: 1.5;
     letter-spacing: -0.011em;
     overflow-x: hidden;
     padding-bottom: env(safe-area-inset-bottom);
-    background-color: #fafaf9;
+    background-color: var(--app-bg);
   }
 
   #root {
     min-height: 100dvh;
-    background-color: #fafaf9;
+    background-color: var(--app-bg);
   }
 
   h1,
@@ -65,7 +154,7 @@
     right: 0;
     bottom: 0;
     height: env(safe-area-inset-bottom);
-    background-color: #fafaf9;
+    background-color: var(--app-bg);
     pointer-events: none;
     z-index: 30;
   }
@@ -77,12 +166,14 @@
   }
 
   .card {
-    @apply rounded-2xl border border-stone-200/80 bg-white shadow-sm;
+    @apply rounded-2xl shadow-sm;
+    border: 1px solid color-mix(in srgb, var(--app-border) 85%, transparent);
+    background-color: var(--app-surface);
     transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
   }
 
   .card-hover:hover {
-    @apply border-stone-300/80;
+    border-color: color-mix(in srgb, var(--app-border-strong) 85%, transparent);
     box-shadow:
       0 4px 6px -1px rgb(0 0 0 / 0.06),
       0 10px 15px -3px rgb(0 0 0 / 0.06);
@@ -93,17 +184,18 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-teal-700 px-5 py-3 text-sm font-semibold text-white shadow-sm;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white shadow-sm;
+    background-color: var(--app-primary);
     transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
   }
 
   .btn-primary:hover {
-    @apply bg-teal-800;
-    box-shadow: 0 4px 12px rgb(15 118 110 / 0.3);
+    background-color: var(--app-primary-hover);
+    box-shadow: 0 4px 12px var(--app-primary-shadow);
   }
 
   .btn-primary:active {
-    @apply bg-teal-900;
+    background-color: var(--app-primary-active);
     transform: scale(0.97);
   }
 
@@ -118,38 +210,49 @@
   }
 
   .form-nav-icon-btn {
-    @apply flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border-2 border-stone-200 p-0 text-stone-500 transition-colors;
+    @apply flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border-2 p-0 transition-colors;
+    border-color: var(--app-border);
+    color: var(--app-text-subtle);
   }
 
   .form-nav-icon-btn:hover {
-    @apply border-stone-300 text-stone-700;
+    border-color: var(--app-border-strong);
+    color: var(--app-text);
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium text-stone-600;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-medium;
+    color: var(--app-text-muted);
     transition: background-color 0.15s ease, color 0.15s ease;
   }
 
   .btn-ghost:hover {
-    @apply bg-stone-100 text-stone-800;
+    background-color: var(--app-surface-soft);
+    color: var(--app-text-strong);
   }
 
   .input-field {
-    @apply w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-stone-800;
+    @apply w-full rounded-xl px-4 py-3 text-sm;
+    border: 1px solid var(--app-border);
+    background-color: var(--app-surface);
+    color: var(--app-text-strong);
     transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
 
   .input-field::placeholder {
-    @apply text-stone-400;
+    color: var(--app-text-faint);
   }
 
   .input-field:focus {
-    @apply border-teal-500 outline-none;
-    box-shadow: 0 0 0 3px rgb(20 184 166 / 0.12);
+    outline: none;
+    border-color: var(--app-primary);
+    box-shadow: 0 0 0 3px var(--app-focus-ring);
   }
 
   .input-floating {
-    @apply w-full border-0 border-b-2 border-stone-200 bg-transparent px-0 pb-2 pt-6 text-base font-medium text-stone-800;
+    @apply w-full border-0 border-b-2 bg-transparent px-0 pb-2 pt-6 text-base font-medium;
+    border-color: var(--app-border);
+    color: var(--app-text-strong);
     transition: border-color 0.2s ease;
   }
 
@@ -158,11 +261,13 @@
   }
 
   .input-floating:focus {
-    @apply border-teal-600 outline-none;
+    outline: none;
+    border-color: var(--app-primary);
   }
 
   .label {
-    @apply mb-1.5 block text-sm font-medium text-stone-600;
+    @apply mb-1.5 block text-sm font-medium;
+    color: var(--app-text-muted);
   }
 
   .page-container {
@@ -176,7 +281,8 @@
   }
 
   .section-title {
-    @apply text-xs font-semibold uppercase tracking-wider text-stone-400;
+    @apply text-xs font-semibold uppercase tracking-wider;
+    color: var(--app-text-faint);
   }
 }
 
@@ -186,7 +292,12 @@
   }
 
   .gradient-hero {
-    background: linear-gradient(135deg, #0f766e 0%, #115e59 50%, #134e4a 100%);
+    background: linear-gradient(
+      135deg,
+      var(--app-hero-start) 0%,
+      var(--app-hero-mid) 50%,
+      var(--app-hero-end) 100%
+    );
   }
 
   .text-balance {
@@ -207,4 +318,192 @@
 
 .animate-slide-up {
   animation: slide-up 0.25s ease-out;
+}
+
+/* Global theme mapping for existing Tailwind utility classes */
+.bg-stone-50 {
+  background-color: var(--app-bg) !important;
+}
+
+.bg-stone-100 {
+  background-color: var(--app-surface-soft) !important;
+}
+
+.bg-stone-50\/50,
+.bg-stone-50\/70,
+.bg-stone-50\/95 {
+  background-color: color-mix(in srgb, var(--app-bg) 80%, transparent) !important;
+}
+
+.bg-white {
+  background-color: var(--app-surface) !important;
+}
+
+.bg-white\/65,
+.bg-white\/70,
+.bg-white\/75,
+.bg-white\/80,
+.bg-white\/95 {
+  background-color: color-mix(in srgb, var(--app-surface) 78%, transparent) !important;
+}
+
+.text-stone-800 {
+  color: var(--app-text-strong) !important;
+}
+
+.text-stone-700 {
+  color: var(--app-text) !important;
+}
+
+.text-stone-600 {
+  color: var(--app-text-muted) !important;
+}
+
+.text-stone-500 {
+  color: var(--app-text-subtle) !important;
+}
+
+.text-stone-400 {
+  color: var(--app-text-faint) !important;
+}
+
+.text-stone-300 {
+  color: color-mix(in srgb, var(--app-text-faint) 75%, white 25%) !important;
+}
+
+.border-stone-200 {
+  border-color: var(--app-border) !important;
+}
+
+.border-stone-100 {
+  border-color: color-mix(in srgb, var(--app-border) 60%, transparent) !important;
+}
+
+.border-stone-200\/80 {
+  border-color: color-mix(in srgb, var(--app-border) 85%, transparent) !important;
+}
+
+.border-stone-200\/70 {
+  border-color: color-mix(in srgb, var(--app-border) 78%, transparent) !important;
+}
+
+.border-stone-300 {
+  border-color: var(--app-border-strong) !important;
+}
+
+.border-stone-300\/80 {
+  border-color: color-mix(in srgb, var(--app-border-strong) 85%, transparent) !important;
+}
+
+.border-stone-400 {
+  border-color: color-mix(in srgb, var(--app-border-strong) 96%, black 4%) !important;
+}
+
+.bg-teal-50 {
+  background-color: color-mix(in srgb, var(--app-primary) 10%, white 90%) !important;
+}
+
+.bg-teal-100 {
+  background-color: color-mix(in srgb, var(--app-primary) 18%, white 82%) !important;
+}
+
+.bg-teal-700 {
+  background-color: var(--app-primary) !important;
+}
+
+.bg-teal-600,
+.bg-teal-600\/90 {
+  background-color: var(--app-primary) !important;
+}
+
+.bg-teal-800 {
+  background-color: var(--app-primary-hover) !important;
+}
+
+.bg-teal-900 {
+  background-color: var(--app-primary-active) !important;
+}
+
+.text-teal-700 {
+  color: var(--app-primary) !important;
+}
+
+.text-teal-600,
+.text-teal-700\/90 {
+  color: var(--app-primary) !important;
+}
+
+.text-teal-800 {
+  color: var(--app-primary-hover) !important;
+}
+
+.text-teal-100 {
+  color: color-mix(in srgb, var(--app-primary) 30%, white 70%) !important;
+}
+
+.border-teal-200,
+.border-teal-300,
+.border-teal-500,
+.border-teal-600,
+.ring-teal-500 {
+  border-color: var(--app-primary) !important;
+}
+
+.ring-stone-200,
+.ring-stone-200\/60,
+.ring-stone-200\/70,
+.ring-stone-200\/80 {
+  --tw-ring-color: color-mix(in srgb, var(--app-border) 85%, transparent) !important;
+}
+
+.ring-stone-300 {
+  --tw-ring-color: color-mix(in srgb, var(--app-border-strong) 90%, transparent) !important;
+}
+
+.hover\:bg-stone-50:hover {
+  background-color: color-mix(in srgb, var(--app-surface-soft) 70%, var(--app-surface) 30%) !important;
+}
+
+.hover\:bg-stone-100:hover {
+  background-color: var(--app-surface-soft) !important;
+}
+
+.hover\:border-stone-400:hover {
+  border-color: color-mix(in srgb, var(--app-border-strong) 96%, black 4%) !important;
+}
+
+.hover\:text-teal-700:hover {
+  color: var(--app-primary) !important;
+}
+
+.hover\:text-teal-800:hover {
+  color: var(--app-primary-hover) !important;
+}
+
+.placeholder\:text-stone-300::placeholder {
+  color: color-mix(in srgb, var(--app-text-faint) 70%, white 30%) !important;
+}
+
+.hover\:bg-teal-50:hover,
+.hover\:bg-teal-50\/50:hover {
+  background-color: color-mix(in srgb, var(--app-primary) 12%, transparent) !important;
+}
+
+.hover\:border-teal-300:hover {
+  border-color: var(--app-primary) !important;
+}
+
+.hover\:bg-teal-800:hover {
+  background-color: var(--app-primary-hover) !important;
+}
+
+.from-teal-900\/80 {
+  --tw-gradient-from: color-mix(in srgb, var(--app-primary-active) 80%, transparent) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+.via-teal-800\/50 {
+  --tw-gradient-to: rgb(255 255 255 / 0) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), color-mix(in srgb, var(--app-primary-hover) 50%, transparent) var(--tw-gradient-via-position), var(--tw-gradient-to) !important;
 }

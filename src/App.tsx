@@ -15,6 +15,7 @@ import {
 import { useInvitesStore } from './store/invitesStore';
 import { useTripsStore } from './store/tripsStore';
 import { Loader2 } from 'lucide-react';
+import { applyAppTheme, loadProfilePreferences } from './utils/profilePreferences';
 
 function AuthenticatedApp() {
   const { user } = useAuth();
@@ -91,6 +92,11 @@ function AuthenticatedApp() {
 
 function AppShell() {
   const { user, loading } = useAuth();
+
+  useEffect(() => {
+    const prefs = loadProfilePreferences(user?.uid);
+    applyAppTheme(prefs.accent);
+  }, [user?.uid]);
 
   if (loading) {
     return (
