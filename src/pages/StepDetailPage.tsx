@@ -173,7 +173,7 @@ export function StepDetailPage() {
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
                       Départ
                     </p>
-                    <p className="mt-2 font-sans text-2xl font-semibold tabular-nums text-stone-800 sm:text-[30px]">
+                    <p className="mt-2 font-brand text-2xl font-semibold tabular-nums text-stone-800 sm:text-[30px]">
                       {step.departureTime || '--:--'}
                     </p>
                     <p className="mt-1 break-words text-xs font-semibold leading-snug text-stone-600 sm:text-base">
@@ -187,7 +187,7 @@ export function StepDetailPage() {
                     <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-stone-400">
                       Arrivée
                     </p>
-                    <p className="mt-2 font-sans text-2xl font-semibold tabular-nums text-stone-800 sm:text-[30px]">
+                    <p className="mt-2 font-brand text-2xl font-semibold tabular-nums text-stone-800 sm:text-[30px]">
                       {step.arrivalTime || '--:--'}
                     </p>
                     <p className="mt-1 break-words text-xs font-semibold leading-snug text-stone-600 sm:text-base">
