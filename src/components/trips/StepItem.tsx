@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import type { TripStep } from '../../types/trip';
 import { TransportIcon } from './TransportIcon';
 import { getTransportMeta, formatDuration } from '../../utils/transport';
+import { formatDayPath } from '../../utils/dayNavigation';
 import { Clock, ArrowRight, Info, ChevronRight } from 'lucide-react';
 
 interface StepItemProps {
@@ -9,9 +10,16 @@ interface StepItemProps {
   tripId: string;
   isFirst: boolean;
   isLast: boolean;
+  currentDayIndex?: number;
 }
 
-export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
+export function StepItem({
+  step,
+  tripId,
+  isFirst,
+  isLast,
+  currentDayIndex,
+}: StepItemProps) {
   const meta = getTransportMeta(step.type);
   const navigate = useNavigate();
   const fromLabel = step.from?.trim();
@@ -19,7 +27,10 @@ export function StepItem({ step, tripId, isFirst, isLast }: StepItemProps) {
   const hasRoute = Boolean(fromLabel && toLabel);
 
   function handleClick() {
-    navigate(`/trips/${tripId}/steps/${step.id}`);
+    navigate(formatDayPath(
+      `/trips/${tripId}/steps/${step.id}`,
+      currentDayIndex ?? step.dayIndex ?? 0
+    ));
   }
 
   return (

@@ -36,7 +36,8 @@ export function getCachedTrips(): Trip[] {
 }
 
 function toTrip(data: DocumentData): Trip {
-  const { uid: _legacyUid, ...rest } = data;
+  const rest = { ...data };
+  delete rest.uid;
   return rest as Trip;
 }
 

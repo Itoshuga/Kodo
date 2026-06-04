@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, useSearchParams } from 'react-router-dom';
 import { X, ArrowRight, Check, Trash2 } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { FormStepper } from '../components/ui/FormStepper';
@@ -8,6 +8,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { useTripsStore } from '../store/tripsStore';
 import { getAllTransportTypes, getStepTypeConfig, getTransportMeta } from '../utils/transport';
 import { getTripDayOptions } from '../utils/tripSchedule';
+import { formatTripDayPath, parseDayIndexParam } from '../utils/dayNavigation';
 import type { TransportType } from '../types/trip';
 
 const TOTAL_STEPS = 3;
@@ -15,6 +16,7 @@ const TOTAL_STEPS = 3;
 export function EditStepPage() {
   const { id, stepId } = useParams<{ id: string; stepId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const trips = useTripsStore((s) => s.trips);
   const updateStep = useTripsStore((s) => s.updateStep);
   const deleteStep = useTripsStore((s) => s.deleteStep);
@@ -54,10 +56,16 @@ export function EditStepPage() {
     );
   }
 
+  const currentTrip = trip;
+  const currentStep = existingStep;
   const transportTypes = getAllTransportTypes();
   const selectedMeta = getTransportMeta(type);
   const typeConfig = getStepTypeConfig(type);
-  const baseDayOptions = getTripDayOptions(trip);
+  const returnDayIndex = parseDayIndexParam(
+    searchParams.get('day'),
+    currentStep.dayIndex ?? 0
+  );
+  const baseDayOptions = getTripDayOptions(currentTrip);
   const dayOptions = [...baseDayOptions];
 
   for (let i = baseDayOptions.length; i <= dayIndex; i += 1) {
@@ -85,8 +93,8 @@ export function EditStepPage() {
     setSubmitError('');
     setIsSubmitting(true);
     try {
-      await updateStep(trip.id, {
-        ...existingStep,
+      await updateStep(currentTrip.id, {
+        ...currentStep,
         type,
         dayIndex,
         title: title.trim(),
@@ -100,7 +108,7 @@ export function EditStepPage() {
         link: normalizeStepLink(link),
         note: note.trim() || undefined,
       });
-      navigate(`/trips/${trip.id}`);
+      navigate(formatTripDayPath(currentTrip.id, dayIndex));
     } catch (error) {
       const message = error instanceof Error
         ? error.message
@@ -115,8 +123,8 @@ export function EditStepPage() {
     setSubmitError('');
     setIsDeleting(true);
     try {
-      await deleteStep(trip.id, existingStep.id);
-      navigate(`/trips/${trip.id}`);
+      await deleteStep(currentTrip.id, currentStep.id);
+      navigate(formatTripDayPath(currentTrip.id, returnDayIndex));
     } catch (error) {
       const message = error instanceof Error
         ? error.message
@@ -129,7 +137,7 @@ export function EditStepPage() {
   }
 
   function goBack() {
-    if (step === 0) navigate(`/trips/${trip.id}`);
+    if (step === 0) navigate(formatTripDayPath(currentTrip.id, returnDayIndex));
     else setStep(step - 1);
   }
 

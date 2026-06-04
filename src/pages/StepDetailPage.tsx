@@ -1,5 +1,5 @@
 ﻿import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,6 +20,7 @@ import { TransportIcon } from '../components/trips/TransportIcon';
 import { useTripsStore } from '../store/tripsStore';
 import { formatDuration, getTransportMeta } from '../utils/transport';
 import { getTripDayOptions } from '../utils/tripSchedule';
+import { formatDayPath, formatTripDayPath, parseDayIndexParam } from '../utils/dayNavigation';
 
 function getLinkLabel(url: string) {
   try {
@@ -32,6 +33,7 @@ function getLinkLabel(url: string) {
 export function StepDetailPage() {
   const { id, stepId } = useParams<{ id: string; stepId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const trips = useTripsStore((s) => s.trips);
   const deleteStep = useTripsStore((s) => s.deleteStep);
   const trip = trips.find((t) => t.id === id);
@@ -60,30 +62,34 @@ export function StepDetailPage() {
     );
   }
 
-  const meta = getTransportMeta(step.type);
-  const stepLink = step.link
-    ? (/^[a-z][a-z0-9+.-]*:/i.test(step.link) ? step.link : `https://${step.link}`)
+  const currentTrip = trip;
+  const currentStep = step;
+  const meta = getTransportMeta(currentStep.type);
+  const returnDayIndex = parseDayIndexParam(searchParams.get('day'), currentStep.dayIndex ?? 0);
+  const tripReturnPath = formatTripDayPath(currentTrip.id, returnDayIndex);
+  const stepLink = currentStep.link
+    ? (/^[a-z][a-z0-9+.-]*:/i.test(currentStep.link) ? currentStep.link : `https://${currentStep.link}`)
     : undefined;
-  const durationLabel = step.estimatedDuration ? formatDuration(step.estimatedDuration) : undefined;
-  const dayOptions = getTripDayOptions(trip);
-  const dayLabel = dayOptions.find((d) => d.index === (step.dayIndex ?? 0))?.shortLabel || `Jour ${(step.dayIndex ?? 0) + 1}`;
-  const fromLabel = step.from?.trim();
-  const toLabel = step.to?.trim();
+  const durationLabel = currentStep.estimatedDuration ? formatDuration(currentStep.estimatedDuration) : undefined;
+  const dayOptions = getTripDayOptions(currentTrip);
+  const dayLabel = dayOptions.find((d) => d.index === (currentStep.dayIndex ?? 0))?.shortLabel || `Jour ${(currentStep.dayIndex ?? 0) + 1}`;
+  const fromLabel = currentStep.from?.trim();
+  const toLabel = currentStep.to?.trim();
   const fullFromLabel = fromLabel || 'Point de départ';
   const fullToLabel = toLabel || 'Point d’arrivée';
   const infoRows = [
-    step.departureTime ? { label: 'Départ', value: step.departureTime } : null,
-    step.arrivalTime ? { label: 'Arrivée', value: step.arrivalTime } : null,
-    step.estimatedDuration ? { label: 'Durée', value: formatDuration(step.estimatedDuration) } : null,
-    step.lineName ? { label: 'Ligne', value: step.lineName } : null,
-    step.platform ? { label: 'Quai / Sortie', value: step.platform } : null,
+    currentStep.departureTime ? { label: 'Départ', value: currentStep.departureTime } : null,
+    currentStep.arrivalTime ? { label: 'Arrivée', value: currentStep.arrivalTime } : null,
+    currentStep.estimatedDuration ? { label: 'Durée', value: formatDuration(currentStep.estimatedDuration) } : null,
+    currentStep.lineName ? { label: 'Ligne', value: currentStep.lineName } : null,
+    currentStep.platform ? { label: 'Quai / Sortie', value: currentStep.platform } : null,
   ].filter(Boolean) as Array<{ label: string; value: string }>;
 
   async function handleDelete() {
     setDeleteError('');
     try {
-      await deleteStep(trip.id, step.id);
-      navigate(`/trips/${trip.id}`);
+      await deleteStep(currentTrip.id, currentStep.id);
+      navigate(tripReturnPath);
     } catch (error) {
       const message = error instanceof Error
         ? error.message
@@ -107,7 +113,7 @@ export function StepDetailPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-3">
                   <Link
-                    to={`/trips/${trip.id}`}
+                    to={tripReturnPath}
                     className="inline-flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-600 transition-colors hover:border-stone-300 hover:text-stone-800"
                     aria-label="Retour au trajet"
                   >
@@ -130,7 +136,7 @@ export function StepDetailPage() {
 
                 <div className="flex items-center gap-2">
                   <Link
-                    to={`/trips/${trip.id}/steps/${step.id}/edit`}
+                    to={formatDayPath(`/trips/${trip.id}/steps/${step.id}/edit`, returnDayIndex)}
                     className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-stone-200 bg-white text-stone-700 transition-colors hover:border-teal-300 hover:text-teal-700"
                     aria-label="Modifier"
                   >

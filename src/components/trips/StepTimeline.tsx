@@ -24,6 +24,7 @@ import { StepItem } from './StepItem';
 interface StepTimelineProps {
   steps: TripStep[];
   tripId: string;
+  currentDayIndex?: number;
   onReorder?: (steps: TripStep[]) => Promise<void> | void;
   isReordering?: boolean;
 }
@@ -34,6 +35,7 @@ interface SortableStepRowProps {
   isFirst: boolean;
   isLast: boolean;
   disabled: boolean;
+  currentDayIndex?: number;
 }
 
 function SortableStepRow({
@@ -42,6 +44,7 @@ function SortableStepRow({
   isFirst,
   isLast,
   disabled,
+  currentDayIndex,
 }: SortableStepRowProps) {
   const {
     attributes,
@@ -54,6 +57,7 @@ function SortableStepRow({
     id: step.id,
     disabled,
   });
+  const { role: sortableRole, ...sortableAttributes } = attributes;
   const lockedTransform = transform ? { ...transform, x: 0 } : null;
 
   return (
@@ -71,9 +75,10 @@ function SortableStepRow({
           tripId={tripId}
           isFirst={isFirst}
           isLast={isLast}
+          currentDayIndex={currentDayIndex}
         />
         <span
-          role="button"
+          role={sortableRole ?? 'button'}
           aria-label={`Réordonner l'étape ${step.order + 1}`}
           className={`absolute right-3 top-4 z-20 inline-flex h-8 w-8 items-center justify-center rounded-full border border-stone-200/80 bg-white/95 text-stone-400 shadow-sm backdrop-blur-sm transition-colors ${
             disabled
@@ -84,7 +89,7 @@ function SortableStepRow({
             event.preventDefault();
             event.stopPropagation();
           }}
-          {...attributes}
+          {...sortableAttributes}
           {...listeners}
         >
           <GripVertical className="h-4 w-4" />
@@ -97,6 +102,7 @@ function SortableStepRow({
 export function StepTimeline({
   steps,
   tripId,
+  currentDayIndex,
   onReorder,
   isReordering = false,
 }: StepTimelineProps) {
@@ -179,6 +185,7 @@ export function StepTimeline({
                 isFirst={i === 0}
                 isLast={i === orderedSteps.length - 1}
                 disabled={!canReorder || isReordering}
+                currentDayIndex={currentDayIndex}
               />
             </div>
           ))}

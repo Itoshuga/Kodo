@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Plus,
@@ -23,6 +23,7 @@ import { ConfirmModal } from '../components/ui/ConfirmModal';
 import { useTripsStore } from '../store/tripsStore';
 import { formatDuration } from '../utils/transport';
 import { formatTripDateRange, getTripDayOptions } from '../utils/tripSchedule';
+import { formatDayPath, parseDayIndexParam } from '../utils/dayNavigation';
 import type { TripActivityEntry, TripStep } from '../types/trip';
 
 const defaultCover = 'https://images.pexels.com/photos/1440476/pexels-photo-1440476.jpeg?auto=compress&cs=tinysrgb&w=800&h=400&fit=crop';
@@ -64,6 +65,8 @@ function getActivityLabel(entry: TripActivityEntry): string {
 export function TripDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const dayParam = searchParams.get('day');
   const trips = useTripsStore((s) => s.trips);
   const deleteTrip = useTripsStore((s) => s.deleteTrip);
   const reorderSteps = useTripsStore((s) => s.reorderSteps);
@@ -78,7 +81,9 @@ export function TripDetailPage() {
   const [deleteError, setDeleteError] = useState('');
   const [reorderError, setReorderError] = useState('');
   const [isReordering, setIsReordering] = useState(false);
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(
+    parseDayIndexParam(dayParam)
+  );
   const dayScrollerRef = useRef<HTMLDivElement | null>(null);
   const [canScrollDaysLeft, setCanScrollDaysLeft] = useState(false);
   const [canScrollDaysRight, setCanScrollDaysRight] = useState(false);
@@ -90,6 +95,13 @@ export function TripDetailPage() {
     setCanScrollDaysLeft(node.scrollLeft > 4);
     setCanScrollDaysRight(node.scrollLeft < maxScrollLeft - 4);
   }
+
+  useEffect(() => {
+    const nextDayIndex = parseDayIndexParam(dayParam);
+    setSelectedDayIndex((current) => (
+      current === nextDayIndex ? current : nextDayIndex
+    ));
+  }, [dayParam]);
 
   useEffect(() => {
     if (!trip) {
@@ -203,6 +215,14 @@ export function TripDetailPage() {
     };
   }
 
+  function handleSelectDay(dayIndex: number) {
+    setSelectedDayIndex(dayIndex);
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('day', String(dayIndex));
+    setSearchParams(nextParams, { replace: true });
+  }
+
   async function handleDelete() {
     setDeleteError('');
     try {
@@ -262,6 +282,8 @@ export function TripDetailPage() {
     }
   }
 
+  const currentDayIndex = activeDay?.index ?? selectedDayIndex;
+
   return (
     <PageLayout>
       <div className="flex min-h-screen flex-col lg:ml-72">
@@ -303,7 +325,7 @@ export function TripDetailPage() {
                   <History className="h-4 w-4" />
                 </button>
                 <Link
-                  to={`/trips/${tripId}/edit`}
+                  to={formatDayPath(`/trips/${tripId}/edit`, currentDayIndex)}
                   className="flex h-10 w-10 items-center justify-center rounded-full bg-black/30 text-white backdrop-blur-sm transition-colors hover:bg-black/50"
                   aria-label="Modifier"
                 >
@@ -374,7 +396,7 @@ export function TripDetailPage() {
                 description="Ajoutez des étapes pour détailler ce trajet."
                 action={
                 <Link
-                    to={`/trips/${tripId}/steps/new?day=${selectedDayIndex}`}
+                    to={formatDayPath(`/trips/${tripId}/steps/new`, selectedDayIndex)}
                     className="btn-primary"
                   >
                     <Plus className="h-4 w-4" />
@@ -422,7 +444,7 @@ export function TripDetailPage() {
                           <button
                             key={option.index}
                             type="button"
-                            onClick={() => setSelectedDayIndex(option.index)}
+                            onClick={() => handleSelectDay(option.index)}
                             className={`group min-w-[112px] flex-shrink-0 rounded-xl border px-3 py-2.5 text-left transition-all duration-150 ${
                               isActive
                                 ? 'border-teal-300 bg-teal-50 text-teal-800 shadow-sm'
@@ -493,6 +515,7 @@ export function TripDetailPage() {
                         <StepTimeline
                           steps={activeDay.steps}
                           tripId={tripId}
+                          currentDayIndex={currentDayIndex}
                           onReorder={handleReorderDaySteps}
                           isReordering={isReordering}
                         />
@@ -503,7 +526,7 @@ export function TripDetailPage() {
 
                 <div className="mt-4 flex justify-center pb-4">
                   <Link
-                    to={`/trips/${tripId}/steps/new?day=${activeDay?.index ?? selectedDayIndex}`}
+                    to={formatDayPath(`/trips/${tripId}/steps/new`, currentDayIndex)}
                     className="inline-flex items-center gap-2 rounded-xl border-2 border-dashed border-stone-200 px-5 py-3 text-sm font-semibold text-stone-500 transition-all duration-150 hover:border-teal-300 hover:bg-teal-50 hover:text-teal-700"
                   >
                     <Plus className="h-4 w-4" />

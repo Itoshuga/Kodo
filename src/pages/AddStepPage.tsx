@@ -8,6 +8,7 @@ import { useTripsStore } from '../store/tripsStore';
 import { getAllTransportTypes, getStepTypeConfig, getTransportMeta } from '../utils/transport';
 import { generateId } from '../utils/ids';
 import { getTripDayOptions } from '../utils/tripSchedule';
+import { formatTripDayPath } from '../utils/dayNavigation';
 import type { TransportType } from '../types/trip';
 
 const TOTAL_STEPS = 3;
@@ -51,10 +52,11 @@ export function AddStepPage() {
     );
   }
 
+  const currentTrip = trip;
   const transportTypes = getAllTransportTypes();
   const selectedMeta = getTransportMeta(type);
   const typeConfig = getStepTypeConfig(type);
-  const baseDayOptions = getTripDayOptions(trip);
+  const baseDayOptions = getTripDayOptions(currentTrip);
   const dayOptions = [...baseDayOptions];
 
   for (let i = baseDayOptions.length; i <= dayIndex; i += 1) {
@@ -83,9 +85,9 @@ export function AddStepPage() {
     setSubmitError('');
     setIsSubmitting(true);
     try {
-      await addStep(trip.id, {
+      await addStep(currentTrip.id, {
         id: generateId(),
-        order: trip.steps.length,
+        order: currentTrip.steps.length,
         dayIndex,
         type,
         title: title.trim(),
@@ -99,7 +101,7 @@ export function AddStepPage() {
         link: normalizeStepLink(link),
         note: note.trim() || undefined,
       });
-      navigate(`/trips/${trip.id}`);
+      navigate(formatTripDayPath(currentTrip.id, dayIndex));
     } catch (error) {
       const message = error instanceof Error
         ? error.message
@@ -111,7 +113,7 @@ export function AddStepPage() {
   }
 
   function goBack() {
-    if (step === 0) navigate(`/trips/${trip.id}`);
+    if (step === 0) navigate(formatTripDayPath(currentTrip.id, dayIndex));
     else setStep(step - 1);
   }
 

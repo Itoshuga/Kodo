@@ -1,16 +1,18 @@
 ﻿import { useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useNavigate, useParams, Link, useSearchParams } from 'react-router-dom';
 import { X, ArrowRight, MapPin, Calendar, Sparkles } from 'lucide-react';
 import { PageLayout } from '../components/layout/PageLayout';
 import { FormStepper } from '../components/ui/FormStepper';
 import { useTripsStore } from '../store/tripsStore';
 import { getCoverImageForTrip } from '../services/coverImageService';
+import { formatTripDayPath, parseDayIndexParam } from '../utils/dayNavigation';
 
 const TOTAL_STEPS = 2;
 
 export function EditTripPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const trips = useTripsStore((s) => s.trips);
   const updateTrip = useTripsStore((s) => s.updateTrip);
   const trip = trips.find((t) => t.id === id);
@@ -37,7 +39,9 @@ export function EditTripPage() {
     );
   }
 
+  const currentTrip = trip;
   const canContinue = title.trim().length > 0;
+  const returnDayIndex = parseDayIndexParam(searchParams.get('day'));
 
   async function handleSubmit() {
     if (!title.trim()) return;
@@ -53,21 +57,21 @@ export function EditTripPage() {
     setIsSubmitting(true);
     try {
       const trimmedTitle = title.trim();
-      const normalizedCurrentTitle = trip.title.trim().toLowerCase();
+      const normalizedCurrentTitle = currentTrip.title.trim().toLowerCase();
       const normalizedNextTitle = trimmedTitle.toLowerCase();
-      const shouldRefreshCover = normalizedCurrentTitle !== normalizedNextTitle || !trip.coverImage;
+      const shouldRefreshCover = normalizedCurrentTitle !== normalizedNextTitle || !currentTrip.coverImage;
 
-      let coverImage = trip.coverImage;
+      let coverImage = currentTrip.coverImage;
       if (shouldRefreshCover) {
         try {
           coverImage = await getCoverImageForTrip(trimmedTitle);
         } catch {
-          coverImage = trip.coverImage;
+          coverImage = currentTrip.coverImage;
         }
       }
 
       await updateTrip({
-        ...trip!,
+        ...currentTrip,
         title: trimmedTitle,
         description: description.trim() || undefined,
         date: startDate,
@@ -75,7 +79,7 @@ export function EditTripPage() {
         endDate,
         coverImage,
       });
-      navigate(`/trips/${trip!.id}`);
+      navigate(formatTripDayPath(currentTrip.id, returnDayIndex));
     } catch (error) {
       const message = error instanceof Error
         ? error.message
@@ -87,7 +91,7 @@ export function EditTripPage() {
   }
 
   function goBack() {
-    if (step === 0) navigate(`/trips/${trip!.id}`);
+    if (step === 0) navigate(formatTripDayPath(currentTrip.id, returnDayIndex));
     else setStep(step - 1);
   }
 
